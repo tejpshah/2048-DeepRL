@@ -28,25 +28,30 @@ class Game2048():
 
     '''STATE TRANSITION FUNCTIONS'''
 
-    def shift_board_up(self):
+    def move_up(self):
+        # TODO: COMPLETE IMPLEMENTATION 
         pass 
 
-    def shift_board_down(self):
+    def move_down(self):
+        # TODO: COMPLETE IMPLEMENTATION 
         pass 
 
-    def shift_board_left(self):
+    def move_left(self):
+        # TODO: COMPLETE IMPLEMENTATION 
         pass 
 
-    def shift_board_right(self):
+    def move_right(self):
+        # TODO: COMPLETE IMPLEMENTATION 
         pass 
 
     '''STATES & REWARDS FOR RL METHODS'''
 
-    def get_reward(self):
-        '''
-        returns the reward of the current state of the game.
-        the log_2(current max score) is the current reward. 
-        '''
+    def get_score(self):
+        '''returns sum of log(tile values) in current game state'''
+        return np.log2(self.state).sum() 
+
+    def get_max(self):
+        '''returns the max log(tile value) in current game state.'''
         return np.log2(np.max(self.state))
     
     def get_state(self):
@@ -59,10 +64,6 @@ class Game2048():
         returns 1 if terminal state, 0 otherwise. 
         '''
         return 1 if (2048 in self.state or len(self.get_spawn_tile_locations()) == 0) else 0 
-
-
-
-
 
 G1 = Game2048()
 print(G1.state)

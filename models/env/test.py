@@ -7,3 +7,5 @@ matrix = np.zeros((5, 5))
 zero_locations = np.argwhere(matrix == 0)
 
 print(zero_locations)
+
+print(np.log2([4,8,16]).sum())
