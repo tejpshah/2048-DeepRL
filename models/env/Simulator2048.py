@@ -4,6 +4,8 @@ class Game2048():
 
     def __init__(self):
         self.init_board()
+        self.score = 0 
+        self.terminal = False 
 
     def init_board(self, rows=4, cols=4):
         '''initializes board of 0s with two random tiles'''
@@ -22,7 +24,7 @@ class Game2048():
         '''returns all [i j] in the current state where a new tile can spawn.'''
         return np.argwhere(self.state == 0)
 
-    def get_score(self):
+    def get_tilesum(self):
         '''returns sum of log(tile values) in current game state'''
         return np.log2(self.state).sum() 
 
@@ -41,7 +43,7 @@ class Game2048():
         '''
         return 1 if (2048 in self.state or len(self.get_spawn_tile_locations()) == 0) else 0 
 
-    def move_up(self):
+    def _move_up(self):
         '''Shifts and merges all tiles in the up direction.'''
 
         # Loop over each column of the game board
@@ -61,7 +63,11 @@ class Game2048():
                         # If it can be merged with the previous element, double the value of the previous element
                         new_col_arr[new_col_arr_idx - 1] *= 2
 
+                        # Update the score after the merge
+                        self.score += np.log2(new_col_arr[new_col_arr_idx - 1])
+
                     else:
+
                         # Otherwise, add the current element to the end of the new column array
                         new_col_arr[new_col_arr_idx] = col_arr[row]
                         new_col_arr_idx += 1
@@ -69,29 +75,48 @@ class Game2048():
             # Update the column in the game board with the values in the new column array
             self.state[:, col] = new_col_arr
 
-    def move_down(self):
+    def _move_down(self):
         '''Shifts and merges all tiles in the down direction.'''
         self.state = np.rot90(self.state, 2)
-        self.move_up()
+        self._move_up()
         self.state = np.rot90(self.state, 2)
 
-    def move_left(self):
+    def _move_left(self):
         '''Shifts and merges all tiles in the left direction.'''
         # Rotate the game board 90 degrees counterclockwise and call move_up
         self.state = np.rot90(self.state, 3)
-        self.move_up()
+        self._move_up()
         self.state = np.rot90(self.state, 1)
 
-    def move_right(self):
+    def _move_right(self):
         '''Shifts and merges all tiles in the right direction.'''
-        # Rotate the game board 90 degrees clockwise and call move_up
         self.state = np.rot90(self.state, 1)
-        self.move_up()
+        self._move_up()
         self.state = np.rot90(self.state, 3)
 
-G1 = Game2048()
-print(G1.state)
-G1.move_down()
-print(G1.state)
+    def move(self, action):
+        '''move the game up/down/left/right'''
+
+        # move the board up/down/left/right
+        if action == 'U': self._move_up() 
+        elif action == 'D': self._move_down() 
+        elif action == 'L' : self._move_left()
+        elif action == 'R' : self._move_right()
+
+        # spawn a new tile 
+        self.init_tile() 
+
+        # check to see if the game state is terminal
+        if self.is_terminal_state():
+            self.terminal = True 
+            return self.score, self.get_max(), self.get_tilesum()
+
+    def print_game(self):
+        '''prints out the state of the game'''
+        print("------------------------")
+        print(f"Current Game Score: {self.score}")
+        print("------------------------")
+        print(self.state)
+
 
 

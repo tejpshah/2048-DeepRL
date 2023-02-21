@@ -1,0 +1,9 @@
+digraph G {
+	compound=true rankdir=LR ranksep=1.0
+	subgraph "8379cb92b19511eda83c827e8d051a89" {
+		"8379cb92b19511eda83c827e8d051a89" [fontsize=0 style=invis]
+		bgcolor=transparent cluster=true color=black label="init_cli #5" style=rounded
+		"8379ccc8b19511eda83c827e8d051a89" [label="play_game #18" fillcolor=transparent shape="" style=rounded]
+	}
+	"8379cb92b19511eda83c827e8d051a89" -> "8379ccc8b19511eda83c827e8d051a89"
+}
