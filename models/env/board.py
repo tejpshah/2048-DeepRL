@@ -1,6 +1,6 @@
 import numpy as np 
 
-class Game2048():
+class Board():
 
     def __init__(self):
         self.init_board()
@@ -26,11 +26,11 @@ class Game2048():
 
     def get_tilesum(self):
         '''returns sum of log(tile values) in current game state'''
-        return np.log2(self.state).sum() 
+        return self.state.sum() 
 
     def get_max(self):
         '''returns the max log(tile value) in current game state.'''
-        return np.log2(np.max(self.state))
+        return np.max(self.state)
     
     def get_state(self):
         '''returns the current state of the game'''
@@ -64,7 +64,7 @@ class Game2048():
                         new_col_arr[new_col_arr_idx - 1] *= 2
 
                         # Update the score after the merge
-                        self.score += np.log2(new_col_arr[new_col_arr_idx - 1])
+                        self.score += new_col_arr[new_col_arr_idx - 1]
 
                     else:
 
@@ -98,10 +98,10 @@ class Game2048():
         '''move the game up/down/left/right'''
 
         # move the board up/down/left/right
-        if action == 'U': self._move_up() 
-        elif action == 'D': self._move_down() 
-        elif action == 'L' : self._move_left()
-        elif action == 'R' : self._move_right()
+        if action == 'W': self._move_up() 
+        elif action =='S': self._move_down() 
+        elif action == 'A': self._move_left()
+        elif action == 'D': self._move_right()
 
         # spawn a new tile 
         self.init_tile() 
