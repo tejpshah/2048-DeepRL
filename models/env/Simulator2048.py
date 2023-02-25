@@ -117,6 +117,3 @@ class Game2048():
         print(f"Current Game Score: {self.score}")
         print("------------------------")
         print(self.state)
-
-
-

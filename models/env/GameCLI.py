@@ -2,7 +2,7 @@ import os
 import numpy as np
 from Simulator2048 import Game2048
 
-class CLI:
+class CLI():
     def __init__(self):
         self.game = Game2048()
 
