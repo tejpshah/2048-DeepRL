@@ -17,3 +17,5 @@ NOTE: All subject to what you think is the best or if you have any better ideas 
 - TODO: @Gloria/Max/Tej - Build utility function to plot histogram of max game score over n simulations for a particular agent (+ saves the image as JPG). 
 - TODO: @Gloria/Max/Tej - Build utility function to plot histogram of overall game score over n simulations for a particular agent (+ saves the image as JPG). 
 - TODO: @Gloria/Max/Tej - Build utility function to automatically save game_score, max_score, and num_steps for a particular simulation to a JSON file. 
+- TODO: @Gloria/Max/Tej - Build a visualization of the 2048 game so that we can see and play the game well and debug faster later on.
+- TODO: @Gloria/Max/Tej - Build a visualization that can generate a short video of the 2048 game sequence given an episode trajectory. Useful for debugging
