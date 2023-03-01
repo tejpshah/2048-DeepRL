@@ -1,6 +1,8 @@
 import time 
+import multiprocessing as mp
 from models.env.board import Board
 from models.agent_random import AgentRandom
+
 
 class Simulator():
     
@@ -36,12 +38,27 @@ class Simulator():
         self.max_scores[game.get_max()] = self.max_scores.get(game.get_max(), 0) + 1
         self.game_scores[game.score] = self.game_scores.get(game.score, 0) + 1
     
-    def run_episodes(self, num_episodes=1000):
-        start = time.time() 
+    def run_episodes(self, num_episodes=1000, num_procs=10):
+        start = time.time()
+
+        # divide episodes among processes
+        episodes_per_proc = num_episodes // num_procs
+        procs = []
+        for _ in range(num_procs):
+            proc = mp.Process(target=self.run_episodes_worker, args=(episodes_per_proc,))
+            procs.append(proc)
+            proc.start()
+
+        # wait for processes to finish
+        for proc in procs:
+            proc.join()
+
+        end = time.time()
+        print(f"It took {end-start:.3f} seconds to run {num_episodes} simulations.")
+
+    def run_episodes_worker(self, num_episodes):
         for _ in range(num_episodes):
             self.run_episode()
-        end = time.time() 
-        print(f"It took {end-start:.3f} seconds to run {num_episodes} simulations.")
 
     def get_simulation_info(self):
         print('\nTHIS WAS THE SIMULATION INFO:')
