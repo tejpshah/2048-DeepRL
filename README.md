@@ -2,6 +2,7 @@
 CS462 Final Project: Tej, Gloria &amp; Max -- 2048 with Deep RL
 
 # Notes (Feb 28th by Tej)
+- Added speed boost to simulator class with multiprocessing.
 - Added the random agent uniformly selecting actions
 - We should make all the agents inherit from this random class for good OOP (?)
 - Added functionality to run n simulations for an agent playing 2048 with statistics in dict (max_score, num_steps, game_score)
