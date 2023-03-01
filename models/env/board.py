@@ -25,11 +25,11 @@ class Board():
         return np.argwhere(self.state == 0)
 
     def get_tilesum(self):
-        '''returns sum of log(tile values) in current game state'''
+        '''returns sum of tile values in current game state'''
         return self.state.sum() 
 
     def get_max(self):
-        '''returns the max log(tile value) in current game state.'''
+        '''returns the max tile value in current game state.'''
         return np.max(self.state)
     
     def get_state(self):
@@ -98,10 +98,10 @@ class Board():
         '''move the game up/down/left/right'''
 
         # move the board up/down/left/right
-        if action == 'W': self._move_up() 
-        elif action =='S': self._move_down() 
-        elif action == 'A': self._move_left()
-        elif action == 'D': self._move_right()
+        if action == 'W' or action == 0: self._move_up() 
+        elif action =='S' or action == 1: self._move_down() 
+        elif action == 'A' or action == 2: self._move_left()
+        elif action == 'D' or action == 3: self._move_right()
 
         # spawn a new tile 
         self.init_tile() 

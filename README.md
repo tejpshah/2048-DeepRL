@@ -1,6 +1,14 @@
 # 2048-DeepRL
 CS462 Final Project: Tej, Gloria &amp; Max -- 2048 with Deep RL
 
+# Notes (Feb 28th by Tej)
+- Added the random agent uniformly selecting actions
+- We should make all the agents inherit from this random class for good OOP (?)
+- Added functionality to run n simulations for an agent playing 2048 with statistics in dict (max_score, num_steps, game_score)
+- (Considerations for later) -- might need to update select_action in simulator depending on our DQN/DDQN/PPO/TRPO agent implementations
+- (Considerations for later) -- might need to look into multithreading and processing so we can train RL Agents and run simulations much faster 
+- Document any questions or comments over here as you work on it so we have a working log of the key things to focus on  
+
 # LIST OF TASKS WEEK 1
 
 ## Environment Simulator 
