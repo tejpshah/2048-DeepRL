@@ -2,6 +2,7 @@ import time
 import multiprocessing as mp
 from models.env.board import Board
 from models.agent_random import AgentRandom
+from models.utils.plotting import Plotter
 import os
 
 
@@ -78,10 +79,23 @@ class Simulator():
         #for i in range(50):
             #os.remove('figure' + str(i+1) + '.png')
     '''
+    
+    '''
+    def plt_sim(self):
+        agent_name, agent_str = "", str(self.agent)
+        for i in range(agent_str.find("Agent") + 5, len(agent_str)):
+            if ord(agent_str[i]) == ord(' '): break
+            agent_name += agent_str[i]
+
+        p = Plotter(game_scores=self.game_scores, max_scores=self.max_scores,
+                    num_steps=self.num_steps, agent_name=agent_name)
+        p.plt_max()
+    '''
 
 
 if __name__ == "__main__":
     S1 = Simulator()
     S1.run_episodes()
+    #S1.plt_sim()
     #S1.visualize_board_video()
     #S1.get_simulation_info()
