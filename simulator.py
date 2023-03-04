@@ -13,9 +13,9 @@ class Simulator():
         self.agent = agent 
 
         # stores simulation info for plotting
-        self.game_scores = dict()
-        self.max_scores = dict() 
-        self.num_steps = dict() 
+        self.game_scores = mp.Manager().dict()
+        self.max_scores = mp.Manager().dict() 
+        self.num_steps = mp.Manager().dict() 
     
     def run_episode(self):
 
@@ -50,8 +50,8 @@ class Simulator():
         procs = []
         for _ in range(num_procs):
             proc = mp.Process(target=self.run_episodes_worker, args=(episodes_per_proc,))
-            procs.append(proc)
             proc.start()
+            procs.append(proc)
 
         # wait for processes to finish
         for proc in procs:
