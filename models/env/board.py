@@ -1,11 +1,32 @@
 import numpy as np 
+import tkinter as tk
+import pandas as pd
+import matplotlib.pyplot as plt
 
 class Board():
+    EMPTY_CELL_COLOR = '#9e948a'
+    CELL_BACKGROUND_COLOR_DICT = {
+        0.0: '#ffffff',
+        2.0: '#eee4da',
+        4.0: '#ede0c8',
+        8.0: '#f2b179',
+        16.0: '#f59563',
+        32.0: '#f67c5f',
+        64.0: '#f65e3b',
+        128.0: '#edcf72',
+        256.0: '#edcc61',
+        512.0: '#edc850',
+        1024.0: '#edc53f',
+        2048.0: '#edc22e',
+        'beyond': '#3c3a32'
+    }
 
     def __init__(self):
         self.init_board()
-        self.score = 0 
-        self.terminal = False 
+        self.score = 0
+        self.max_number = 0
+        self.last_move = 'None'
+        self.terminal = False
 
     def init_board(self, rows=4, cols=4):
         '''initializes board of 0s with two random tiles'''
@@ -74,12 +95,14 @@ class Board():
 
             # Update the column in the game board with the values in the new column array
             self.state[:, col] = new_col_arr
+        self.last_move = 'up'
 
     def _move_down(self):
         '''Shifts and merges all tiles in the down direction.'''
         self.state = np.rot90(self.state, 2)
         self._move_up()
         self.state = np.rot90(self.state, 2)
+        self.last_move = 'down'
 
     def _move_left(self):
         '''Shifts and merges all tiles in the left direction.'''
@@ -87,12 +110,14 @@ class Board():
         self.state = np.rot90(self.state, 3)
         self._move_up()
         self.state = np.rot90(self.state, 1)
+        self.last_move = 'left'
 
     def _move_right(self):
         '''Shifts and merges all tiles in the right direction.'''
         self.state = np.rot90(self.state, 1)
         self._move_up()
         self.state = np.rot90(self.state, 3)
+        self.last_move = 'right'
 
     def move(self, action):
         '''move the game up/down/left/right'''
@@ -117,3 +142,45 @@ class Board():
         print(f"Current Game Score: {self.score}")
         print("------------------------")
         print(self.state)
+
+    def visualize_board(self):
+        plt.rcParams['figure.figsize'] = [3.00, 3.00]
+        plt.rcParams['figure.autolayout'] = True
+        fig, ax = plt.subplots(facecolor ='white')
+        #fig.patch.set_visible(False)
+        ax.axis('off')
+        #ax.axis('tight')
+        df = pd.DataFrame(self.state, columns = ['0', '1', '2', '3'])
+        table = ax.table(cellText = df.values, loc = 'center', cellLoc='center')
+        fig.tight_layout()
+        for i in range(4):
+            for j in range(4):
+                data = self.state[i][j]
+                self.max_number = max(data, self.max_number)
+                color = self.CELL_BACKGROUND_COLOR_DICT[data]
+                table[(i, j)].set_facecolor(color)
+        ax.text(.1, .8, 'Current Score: ' + str(self.score), transform = ax.transAxes, color = 'black')
+        ax.text(.25, .7, 'Max Number: ' + str(self.max_number), transform = ax.transAxes, color = 'black')
+        ax.text(.3, .2, 'Last Move: ' + self.last_move, transform = ax.transAxes, color = 'black')
+        plt.show()
+    
+    def visualize_board_save(self, num):
+        plt.rcParams['figure.figsize'] = [3.00, 3.00]
+        plt.rcParams['figure.autolayout'] = True
+        fig, ax = plt.subplots(facecolor ='white')
+        #fig.patch.set_visible(False)
+        ax.axis('off')
+        #ax.axis('tight')
+        df = pd.DataFrame(self.state, columns = ['0', '1', '2', '3'])
+        table = ax.table(cellText = df.values, loc = 'center', cellLoc='center')
+        fig.tight_layout()
+        for i in range(4):
+            for j in range(4):
+                data = self.state[i][j]
+                self.max_number = max(data, self.max_number)
+                color = self.CELL_BACKGROUND_COLOR_DICT[data]
+                table[(i, j)].set_facecolor(color)
+        ax.text(.1, .8, 'Current Score: ' + str(self.score), transform = ax.transAxes, color = 'black')
+        ax.text(.1, .7, 'Max Number: ' + str(self.max_number), transform = ax.transAxes, color = 'black')
+        ax.text(.3, .2, 'Last Move: ' + self.last_move, transform = ax.transAxes, color = 'black')
+        plt.savefig('figure' + str(num) + '.png')

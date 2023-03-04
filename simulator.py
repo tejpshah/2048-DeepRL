@@ -2,6 +2,7 @@ import time
 import multiprocessing as mp
 from models.env.board import Board
 from models.agent_random import AgentRandom
+import os
 
 
 class Simulator():
@@ -32,6 +33,9 @@ class Simulator():
             # updates game board steps
             game.move(action)
             n_steps += 1
+
+            # plot and save image of game at that time
+            # game.visualize_board_save(n_steps)
 
         # updates simulation info dictionaries 
         self.num_steps[n_steps] = self.num_steps.get(n_steps, 0) + 1
@@ -65,8 +69,19 @@ class Simulator():
         print(f"Game Scores Dictionary: {self.game_scores}")
         print(f"Max Scores Dictionary: {self.max_scores}")
         print(f"Episode Steps Dictionary: {self.num_steps}\n")
+    
+    '''
+    def visualize_board_video(self, fn = 'video.mp4'):
+        os.system('ffmpeg -r 3 -i figure%d.png -vcodec mpeg4 -y '+fn)
+        print("A video showing the agent's traversal is ready to view. Opening...")
+        os.system('open '+fn)
+        #for i in range(50):
+            #os.remove('figure' + str(i+1) + '.png')
+    '''
+
 
 if __name__ == "__main__":
     S1 = Simulator()
     S1.run_episodes()
-    # S1.get_simulation_info()
+    #S1.visualize_board_video()
+    #S1.get_simulation_info()

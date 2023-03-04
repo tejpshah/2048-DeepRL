@@ -26,6 +26,8 @@ class cli():
         while not self.game.terminal:
             action = input()
             if action == 'Q': break 
+            elif action == 'G': self.game.visualize_board()
+            elif action == 'P': self.game.visualize_board_save(1)
             else: self.game.move(action)
             self.game.print_game()
             if self.game.terminal:
