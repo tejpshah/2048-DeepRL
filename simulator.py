@@ -43,7 +43,7 @@ class Simulator():
         self.max_scores[game.get_max()] = self.max_scores.get(game.get_max(), 0) + 1
         self.game_scores[game.score] = self.game_scores.get(game.score, 0) + 1
     
-    def run_episodes(self, num_episodes=1000, num_procs=10):
+    def run_episodes(self, num_episodes=100, num_procs=10):
         start = time.time()
 
         # divide episodes among processes
@@ -80,22 +80,18 @@ class Simulator():
             #os.remove('figure' + str(i+1) + '.png')
     '''
     
-    '''
+    #Plots and saves the Data
     def plt_sim(self):
-        agent_name, agent_str = "", str(self.agent)
-        for i in range(agent_str.find("Agent") + 5, len(agent_str)):
-            if ord(agent_str[i]) == ord(' '): break
-            agent_name += agent_str[i]
-
         p = Plotter(game_scores=self.game_scores, max_scores=self.max_scores,
-                    num_steps=self.num_steps, agent_name=agent_name)
-        p.plt_max()
-    '''
+                    num_steps=self.num_steps, agent=self.agent)
+        p.plt_max_score()
+        p.plt_game_score()
+        p.save_info()
 
 
 if __name__ == "__main__":
     S1 = Simulator()
     S1.run_episodes()
-    #S1.plt_sim()
-    #S1.visualize_board_video()
+    S1.plt_sim()
     #S1.get_simulation_info()
+    #S1.visualize_board_video()
