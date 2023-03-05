@@ -122,9 +122,15 @@ if __name__ == "__main__":
     S1.run_episodes()
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     #S1.plt_sim()
     # S1.visualize_board_video()
     S1.get_simulation_info()
+=======
+    S1.plt_sim()
+    #S1.get_simulation_info()
+    #S1.visualize_board_video()
+>>>>>>> f9b65e8a98a6c1783c7fddbc36abc75841407f58
 =======
     S1.plt_sim()
     #S1.get_simulation_info()
