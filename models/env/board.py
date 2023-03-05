@@ -20,6 +20,7 @@ class Board():
         2048.0: '#edc22e',
         'beyond': '#3c3a32'
     }
+    VISUAL_X_COORD = 0
 
     def __init__(self):
         self.init_board()
@@ -35,8 +36,10 @@ class Board():
         self.init_tile() 
 
     def init_tile(self, p=0.9):
-        '''randomly spawns tile of 2 (p=.9) or 4 (p=.1) in free space'''
+        '''randomly spawns tile of 2 (p=.9) or 4 (p=.1) in free space, or returns if there is no free space'''
         new_spawn_spots = self.get_spawn_tile_locations()
+        if len(new_spawn_spots) == 0:
+            return
         new_tile_idx = np.random.choice(new_spawn_spots.shape[0], size=1, replace=False)
         new_row, new_col = new_spawn_spots[new_tile_idx].squeeze()
         self.state[new_row, new_col] = 2 if np.random.random() < p else 4
@@ -62,7 +65,22 @@ class Board():
         episode is over is board is full or 2048 is achieved. 
         returns 1 if terminal state, 0 otherwise. 
         '''
-        return 1 if (2048 in self.state or len(self.get_spawn_tile_locations()) == 0) else 0 
+        if 2048 in self.state:
+            return 1
+        if len(self.get_spawn_tile_locations()) > 0:
+            return 0
+        # Check if any combinations can be made if the board is full
+        for i in range(3):
+            for j in range(3):
+                if (self.state[i][j] == self.state[i+1][j] or self.state[i][j] == self.state[i][j+1]):
+                    return 0
+        for i in range(3):
+            if (self.state[i][3] == self.state[i+1][3]):
+                return 0
+        for j in range(3):
+            if (self.state[3][j] == self.state[3][j+1]):
+                return 0
+        return 1
 
     def _move_up(self):
         '''Shifts and merges all tiles in the up direction.'''
@@ -159,9 +177,9 @@ class Board():
                 self.max_number = max(data, self.max_number)
                 color = self.CELL_BACKGROUND_COLOR_DICT[data]
                 table[(i, j)].set_facecolor(color)
-        ax.text(.1, .8, 'Current Score: ' + str(self.score), transform = ax.transAxes, color = 'black')
-        ax.text(.25, .7, 'Max Number: ' + str(self.max_number), transform = ax.transAxes, color = 'black')
-        ax.text(.3, .2, 'Last Move: ' + self.last_move, transform = ax.transAxes, color = 'black')
+        ax.text(self.VISUAL_X_COORD, .8, 'Current Score: ' + str(self.score), transform = ax.transAxes, color = 'black')
+        ax.text(self.VISUAL_X_COORD, .7, 'Max Number: ' + str(self.max_number), transform = ax.transAxes, color = 'black')
+        ax.text(self.VISUAL_X_COORD, .2, 'Last Move: ' + self.last_move, transform = ax.transAxes, color = 'black')
         plt.show()
     
     def visualize_board_save(self, num):
@@ -180,7 +198,8 @@ class Board():
                 self.max_number = max(data, self.max_number)
                 color = self.CELL_BACKGROUND_COLOR_DICT[data]
                 table[(i, j)].set_facecolor(color)
-        ax.text(.1, .8, 'Current Score: ' + str(self.score), transform = ax.transAxes, color = 'black')
-        ax.text(.1, .7, 'Max Number: ' + str(self.max_number), transform = ax.transAxes, color = 'black')
-        ax.text(.3, .2, 'Last Move: ' + self.last_move, transform = ax.transAxes, color = 'black')
+        ax.text(self.VISUAL_X_COORD, .8, 'Current Score: ' + str(self.score), transform = ax.transAxes, color = 'black')
+        ax.text(self.VISUAL_X_COORD, .7, 'Max Number: ' + str(self.max_number), transform = ax.transAxes, color = 'black')
+        ax.text(self.VISUAL_X_COORD, .2, 'Last Move: ' + self.last_move, transform = ax.transAxes, color = 'black')
         plt.savefig('figure' + str(num) + '.png')
+        plt.close()

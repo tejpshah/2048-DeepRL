@@ -19,7 +19,8 @@ class cli():
 
     def print_instructions(self):
         '''insturctions for the 2048 game'''
-        print("Type in the terminal 'W'/'S'/'A'/'D' to move Up, Down, Left, or Right respectively. Press 'Q' to quit.")
+        print("Type in the terminal 'W'/'S'/'A'/'D' to move Up, Down, Left, or Right respectively. Press 'Q' to quit." )
+        print("Type 'G' to visualize the game board or 'P' to save an image of the board.")
 
     def play_game(self):
         '''allows user to lay games from terminal'''
