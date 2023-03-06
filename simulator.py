@@ -10,7 +10,9 @@ import os
 
 
 class Simulator():
-    
+
+    VISUAL_X_COORD = 0
+
     def __init__(self, agent=AgentRandom()):
 
         # selects which agent to run simulations from
@@ -39,14 +41,14 @@ class Simulator():
             n_steps += 1
 
             # plot and save image of game at that time from board game function
-            # game.visualize_board_save(n_steps)
+            game.visualize_board_save(n_steps)
             
         # updates simulation info dictionaries 
         self.num_steps[n_steps] = self.num_steps.get(n_steps, 0) + 1
         self.max_scores[game.get_max()] = self.max_scores.get(game.get_max(), 0) + 1
         self.game_scores[game.score] = self.game_scores.get(game.score, 0) + 1
     
-    def run_episodes(self, num_episodes=100, num_procs=10):
+    def run_episodes(self, num_episodes=1, num_procs=1):
         start = time.time()
 
         # divide episodes among processes
@@ -120,6 +122,6 @@ class Simulator():
 if __name__ == "__main__":
     S1 = Simulator()
     S1.run_episodes()
-    # S1.visualize_board_video()
+    S1.visualize_board_video()
     S1.get_simulation_info()
     S1.plt_sim()
