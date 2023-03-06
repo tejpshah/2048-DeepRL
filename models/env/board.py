@@ -201,5 +201,6 @@ class Board():
         ax.text(self.VISUAL_X_COORD, .8, 'Current Score: ' + str(self.score), transform = ax.transAxes, color = 'black')
         ax.text(self.VISUAL_X_COORD, .7, 'Max Number: ' + str(self.max_number), transform = ax.transAxes, color = 'black')
         ax.text(self.VISUAL_X_COORD, .2, 'Last Move: ' + self.last_move, transform = ax.transAxes, color = 'black')
+        # plt.rc('savefig', dpi = 300)
         plt.savefig('figure' + str(num) + '.png')
         plt.close()
