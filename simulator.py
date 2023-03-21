@@ -8,7 +8,6 @@ import pandas as pd
 import os
 # mport torch
 
-
 class Simulator():
 
     VISUAL_X_COORD = 0

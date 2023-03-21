@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 class Board():
+
     EMPTY_CELL_COLOR = '#9e948a'
     CELL_BACKGROUND_COLOR_DICT = {
         0.0: '#ffffff',
@@ -139,7 +140,6 @@ class Board():
 
     def move(self, action):
         '''move the game up/down/left/right'''
-
         # move the board up/down/left/right
         if action == 'W' or action == 0: self._move_up() 
         elif action =='S' or action == 1: self._move_down() 
@@ -162,44 +162,94 @@ class Board():
         print(self.state)
 
     def visualize_board(self):
+        """
+        Visualize the current state of the game board using a table with colored cells.
+
+        The function generates a matplotlib figure containing a table with the current state of the game board,
+        where each cell is colored according to the value of the corresponding number. The function also shows
+        the current score, the maximum number reached so far, and the last move made by the player.
+        """
+
+        # Set the size and layout of the figure
         plt.rcParams['figure.figsize'] = [3.00, 3.00]
         plt.rcParams['figure.autolayout'] = True
-        fig, ax = plt.subplots(facecolor ='white')
-        #fig.patch.set_visible(False)
+
+        # Create the figure and the axis
+        fig, ax = plt.subplots(facecolor='white')
+
+        # Remove the axis ticks and labels
         ax.axis('off')
-        #ax.axis('tight')
-        df = pd.DataFrame(self.state, columns = ['0', '1', '2', '3'])
-        table = ax.table(cellText = df.values, loc = 'center', cellLoc='center')
+
+        # Create a Pandas DataFrame from the game state
+        df = pd.DataFrame(self.state, columns=['0', '1', '2', '3'])
+
+        # Create a table from the DataFrame and add it to the axis
+        table = ax.table(cellText=df.values, loc='center', cellLoc='center')
+
+        # Adjust the layout of the figure
         fig.tight_layout()
+
+        # Set the color of each cell according to its value
         for i in range(4):
             for j in range(4):
                 data = self.state[i][j]
                 self.max_number = max(data, self.max_number)
                 color = self.CELL_BACKGROUND_COLOR_DICT[data]
                 table[(i, j)].set_facecolor(color)
-        ax.text(self.VISUAL_X_COORD, .8, 'Current Score: ' + str(self.score), transform = ax.transAxes, color = 'black')
-        ax.text(self.VISUAL_X_COORD, .7, 'Max Number: ' + str(self.max_number), transform = ax.transAxes, color = 'black')
-        ax.text(self.VISUAL_X_COORD, .2, 'Last Move: ' + self.last_move, transform = ax.transAxes, color = 'black')
+
+        # Add text labels to the axis with additional information about the game state
+        ax.text(self.VISUAL_X_COORD, .8, 'Current Score: ' + str(self.score), transform=ax.transAxes, color='black')
+        ax.text(self.VISUAL_X_COORD, .7, 'Max Number: ' + str(self.max_number), transform=ax.transAxes, color='black')
+        ax.text(self.VISUAL_X_COORD, .2, 'Last Move: ' + self.last_move, transform=ax.transAxes, color='black')
+
+        # Show the figure
         plt.show()
-    
+
     def visualize_board_save(self, num):
+        """
+        Visualize the current state of the game board using a table with colored cells and save the figure to a file.
+
+        The function generates a matplotlib figure containing a table with the current state of the game board,
+        where each cell is colored according to the value of the corresponding number. The function also shows
+        the current score, the maximum number reached so far, and the last move made by the player. The figure is
+        saved to a PNG file with the specified number appended to the filename.
+        """
+        
+        # Set the size and layout of the figure
         plt.rcParams['figure.figsize'] = [3.00, 3.00]
         plt.rcParams['figure.autolayout'] = True
-        fig, ax = plt.subplots(facecolor ='white')
-        #fig.patch.set_visible(False)
+
+        # Create the figure and the axis
+        fig, ax = plt.subplots(facecolor='white')
+
+        # Remove the axis ticks and labels
         ax.axis('off')
-        #ax.axis('tight')
-        df = pd.DataFrame(self.state, columns = ['0', '1', '2', '3'])
-        table = ax.table(cellText = df.values, loc = 'center', cellLoc='center')
+
+        # Create a Pandas DataFrame from the game state
+        df = pd.DataFrame(self.state, columns=['0', '1', '2', '3'])
+
+        # Create a table from the DataFrame and add it to the axis
+        table = ax.table(cellText=df.values, loc='center', cellLoc='center')
+
+        # Adjust the layout of the figure
         fig.tight_layout()
+
+        # Set the color of each cell according to its value
         for i in range(4):
             for j in range(4):
                 data = self.state[i][j]
                 self.max_number = max(data, self.max_number)
                 color = self.CELL_BACKGROUND_COLOR_DICT[data]
                 table[(i, j)].set_facecolor(color)
-        ax.text(self.VISUAL_X_COORD, .8, 'Current Score: ' + str(self.score), transform = ax.transAxes, color = 'black')
-        ax.text(self.VISUAL_X_COORD, .7, 'Max Number: ' + str(self.max_number), transform = ax.transAxes, color = 'black')
-        ax.text(self.VISUAL_X_COORD, .2, 'Last Move: ' + self.last_move, transform = ax.transAxes, color = 'black')
+
+        # Add text labels to the axis with additional information about the game state
+        ax.text(self.VISUAL_X_COORD, .8, 'Current Score: ' + str(self.score), transform=ax.transAxes, color='black')
+        ax.text(self.VISUAL_X_COORD, .7, 'Max Number: ' + str(self.max_number), transform=ax.transAxes, color='black')
+        ax.text(self.VISUAL_X_COORD, .2, 'Last Move: ' + self.last_move, transform=ax.transAxes, color='black')
+
+        # Save the figure to a file with the specified number appended to the filename
+        plt.rc('savefig', dpi=300)
         plt.savefig('figure' + str(num) + '.png')
+
+        # Close the figure to free up memory
         plt.close()

@@ -6,8 +6,7 @@ import json
 
 def bins_calc(lst: list, use: str) -> list:
     """
-    Returns a list of bins to avoid gaps in histogram plotting
-    for Max score or Game Score
+    Returns a list of bins for a histrogram
     
     Parameters
     ----------
@@ -39,7 +38,21 @@ def get_name(agent) -> str:
     return agent_name
 
 class Plotter():
+    
+    """
+    A class for creating plots and saving information about the plots.
+    """
+
     def __init__(self, game_scores=None, max_scores=None, num_steps=None, agent=None) -> None:
+        """
+        Initialize a Plotter object.
+
+        Args:
+            game_scores: A dictionary containing game scores.
+            max_scores: A dictionary containing maximum scores.
+            num_steps: A dictionary containing the number of steps.
+            agent: An object representing an agent.
+        """
         self.game_scores = game_scores
         self.max_scores = max_scores
         self.num_steps = num_steps
@@ -49,7 +62,7 @@ class Plotter():
     
     def plt_max_score(self, plt_type:str) -> None:
         """
-        Plots graph of Max Score:
+        Create a plot of the max scores and save it to a file.
         
         Parameters
         ----------
@@ -75,7 +88,7 @@ class Plotter():
 
     def plt_game_score(self, plt_type:str) -> None:
         """
-        Plots graph of Max Score:
+        Create a plot of the game scores and save it to a file.
         
         Parameters
         ----------
@@ -99,9 +112,9 @@ class Plotter():
         outfile = self.my_path + f'/data/plots/{self.agent_name} GameScore' + time + '.jpg'
         plt.savefig(outfile)
 
-    def save_info(self) -> None:
+    def save_info(self):
         """
-        Saves all info to a JSON file.
+        Save information about the maximum and game scores, and the number of steps to a JSON file.
         """
         time = ''.join(c for c in str(datetime.now()) if c not in '.:')
         JSON_val = {
