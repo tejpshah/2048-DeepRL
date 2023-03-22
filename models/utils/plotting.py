@@ -6,11 +6,12 @@ import json
 
 def bins_calc(lst: list, use: str) -> list:
     """
-    Returns a list of bins for a histrogram
+    Calculates the bins for a histrogram
     
-    Parameters
+    Parameters:
     ----------
     lst : list
+        list of results from games
     use : str
         Choices of 'max' or 'game'
     """
@@ -30,6 +31,11 @@ def bins_calc(lst: list, use: str) -> list:
 def get_name(agent) -> str:
     """"
     Takes an agent object and returns the agents name.
+
+    Parameters
+    ----------
+    agent: AgentObject
+        An object representing an agent.
     """
     agent_name, agent_str = "", str(agent)
     for i in range(agent_str.find("Agent") + 5, len(agent_str)):
@@ -47,11 +53,16 @@ class Plotter():
         """
         Initialize a Plotter object.
 
-        Args:
-            game_scores: A dictionary containing game scores.
-            max_scores: A dictionary containing maximum scores.
-            num_steps: A dictionary containing the number of steps.
-            agent: An object representing an agent.
+        Parameters
+        ----------
+        game_scores : dict
+            A dictionary containing game scores.
+        max_scores : dict
+            A dictionary containing maximum scores.
+        num_steps : dict
+            A dictionary containing the number of steps.
+        agent: AgentObject 
+            An object representing an agent.
         """
         self.game_scores = game_scores
         self.max_scores = max_scores
