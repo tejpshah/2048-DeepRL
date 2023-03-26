@@ -21,13 +21,21 @@ class Board():
         2048.0: '#edc22e',
         'beyond': '#3c3a32'
     }
+
+    MOVEMENT_DICT = {
+        0: 'up',
+        1: 'down',
+        2: 'left',
+        3: 'right'
+    }
+    
     VISUAL_X_COORD = 0
 
     def __init__(self):
         self.init_board()
         self.score = 0
         self.max_number = 0
-        self.last_move = 'None'
+        self.last_move = None
         self.terminal = False
 
     def init_board(self, rows=4, cols=4):
@@ -60,6 +68,14 @@ class Board():
     def get_state(self):
         '''returns the current state of the game'''
         return self.state
+    
+    def get_score(self):
+        '''returns the current score of the game'''
+        return self.score
+
+    def get_last_move(self):
+        '''returns the last move made in the game'''
+        return self.last_move
 
     def is_terminal_state(self):
         '''
@@ -114,14 +130,14 @@ class Board():
 
             # Update the column in the game board with the values in the new column array
             self.state[:, col] = new_col_arr
-        self.last_move = 'up'
+        self.last_move = 0
 
     def _move_down(self):
         '''Shifts and merges all tiles in the down direction.'''
         self.state = np.rot90(self.state, 2)
         self._move_up()
         self.state = np.rot90(self.state, 2)
-        self.last_move = 'down'
+        self.last_move = 1
 
     def _move_left(self):
         '''Shifts and merges all tiles in the left direction.'''
@@ -129,14 +145,14 @@ class Board():
         self.state = np.rot90(self.state, 3)
         self._move_up()
         self.state = np.rot90(self.state, 1)
-        self.last_move = 'left'
+        self.last_move = 2
 
     def _move_right(self):
         '''Shifts and merges all tiles in the right direction.'''
         self.state = np.rot90(self.state, 1)
         self._move_up()
         self.state = np.rot90(self.state, 3)
-        self.last_move = 'right'
+        self.last_move = 3
 
     def move(self, action):
         '''move the game up/down/left/right'''
@@ -245,7 +261,7 @@ class Board():
         # Add text labels to the axis with additional information about the game state
         ax.text(self.VISUAL_X_COORD, .8, 'Current Score: ' + str(self.score), transform=ax.transAxes, color='black')
         ax.text(self.VISUAL_X_COORD, .7, 'Max Number: ' + str(self.max_number), transform=ax.transAxes, color='black')
-        ax.text(self.VISUAL_X_COORD, .2, 'Last Move: ' + self.last_move, transform=ax.transAxes, color='black')
+        ax.text(self.VISUAL_X_COORD, .2, 'Last Move: ' + self.MOVEMENT_DICT[self.last_move], transform=ax.transAxes, color='black')
 
         # Save the figure to a file with the specified number appended to the filename
         plt.rc('savefig', dpi=300)
