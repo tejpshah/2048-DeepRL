@@ -121,6 +121,6 @@ class Simulator():
 if __name__ == "__main__":
     S1 = Simulator()
     S1.run_episodes()
-    S1.visualize_board_video()
+    # S1.visualize_board_video()
     S1.get_simulation_info()
     S1.plt_sim()
