@@ -35,10 +35,11 @@ def get_name(agent) -> str:
     Parameters
     ----------
     agent: AgentObject
-        An object representing an agent.
+        An object: Agent{agent_name} representing an agent.
     """
-    agent_name, agent_str = "", str(agent).upper()
-    for i in range(agent_str.find("AGENT") + 5, len(agent_str)):
+    agent_name, agent_str = "", str(agent)
+    print(agent_str)
+    for i in range(agent_str.find("Agent") + 5, len(agent_str)):
         if ord(agent_str[i]) > ord('Z') or ord(agent_str[i]) < ord('A'): break
         agent_name += agent_str[i]
     return agent_name

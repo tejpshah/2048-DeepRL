@@ -10,7 +10,7 @@ import copy
 
 DEVICE  = "cuda" if torch.cuda.is_available() else "cpu"
 
-class AgentDDQN(nn.Module):
+class AgentDDQN():
     
     def __init__(self, epsilon=.25, arch=2, drop=False, batch_norm=False, steps=3):
       """
@@ -39,6 +39,7 @@ class AgentDDQN(nn.Module):
 
       self.epsilon = epsilon
       
+      #creates Q network and loads/backsup weights if they exist
       self.Q = nn.Sequential(nn.Flatten())
       self.Q.add_module("Linear", self.build_Q_net(arch=arch, drop=drop, batch_norm=batch_norm))
       self.save_path = os.path.dirname(__file__)
@@ -49,14 +50,16 @@ class AgentDDQN(nn.Module):
       else:
         with open(self.save_path + "/data/Checkpoints/agent_ddqn.pt", "w") as f:
           pass
-
+      
+      #creates Q_hat network and loads same weights as Q
       self.Q_hat = nn.Sequential(nn.Flatten())
       self.Q_hat.add_module("Linear", self.build_Q_net(arch=arch, drop=drop, batch_norm=batch_norm))
       self.Q_hat.load_state_dict(self.Q.state_dict())
       
       self.env = Env_Emulator()  
       
-      self.optimizer = optim.SGD(self.Q.parameters(), lr=0.001) 
+      self.optimizer = optim.SGD(self.Q.parameters(), lr=0.001, momentum=.9) 
+      
       self.steps = steps
       self.step_count = 0
 
@@ -71,24 +74,27 @@ class AgentDDQN(nn.Module):
         The state of the board
       """
       #decay epsilon
-      self.epsilon = self.epsilon * 0.995 if self.epsilon > 0.1 else self.epsilon
+      self.epsilon = self.epsilon * 0.9999 if self.epsilon > 0.1 else self.epsilon
 
-      #chooses random action
       if np.random.uniform() < self.epsilon:
-        return np.random.choice(self.actions)
-      
-      #converts state from numpy to torch tensor
-      state = torch.tensor(state, dtype=torch.float32, requires_grad=True, device=DEVICE).reshape(1, 4, 4)
+        #chooses random action
+        action = np.random.choice(self.actions)
+      else:
+        #converts state from numpy to torch tensor
+        state = torch.tensor(state, dtype=torch.float32, requires_grad=True, device=DEVICE).reshape(1, 4, 4)
 
-      #chooses the optimal action
-      self.Q.eval()
-      action = torch.argmax(self.Q(state)).item()
-      self.Q.train()
+        #else chooses the optimal action
+        self.Q.eval()
+        action = torch.argmax(self.Q(state)).item()
+        self.Q.train()
 
       #emulates the action chosen
       self.env.step(board, action)
 
-      if self.env.get_replay_buffer_length() > 10:
+      self.step_count += 1
+
+      #Learn avery # steps
+      if self.step_count % self.steps == 0:
 
         states, actions, rewards, next_states, dones = self.env.sample()
 
@@ -103,9 +109,7 @@ class AgentDDQN(nn.Module):
         loss.backward()
         self.optimizer.step()
       
-      #updates Q_hat weights every # steps and saves weights
-      self.step_count += 1
-      if self.step_count == self.steps:
+        #updates Q_hat weights every # steps and saves weights
         self.Q_hat.load_state_dict(self.Q.state_dict())
         torch.save(self.Q_hat.state_dict(), self.save_path + '/data/Checkpoints/agent_ddqn.pt')
         self.step_count = 0
@@ -181,8 +185,7 @@ class Env_Emulator():
     next_max = board.get_max()
     next_state = torch.tensor(board.get_state(), dtype=torch.float32, requires_grad=True, device=DEVICE).reshape(1, 4, 4)
 
-    # print(f'borad info:{curr_score, curr_max, curr_state, action, next_score, next_max, done}\n\n')
-    reward = (next_score - curr_score) + (next_max - curr_max)**2
+    reward = np.sqrt(2 * next_score - curr_score) * (next_max / 2048)
 
     self.replay_buffer.append((curr_state, action, reward, next_state, done))
     board = None
@@ -214,9 +217,6 @@ class Env_Emulator():
   
   
   def reset_buffer(self):
-    """
-    resets replay memory
-    """
     self.replay_buffer = []
 
   def get_replay_buffer(self):
