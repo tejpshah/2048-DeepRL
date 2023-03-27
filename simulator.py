@@ -50,7 +50,7 @@ class Simulator():
         self.max_scores[game.get_max()] = self.max_scores.get(game.get_max(), 0) + 1
         self.game_scores[game.score] = self.game_scores.get(game.score, 0) + 1
     
-    def run_episodes(self, num_episodes=100, num_procs=1):
+    def run_episodes(self, num_episodes=50, num_procs=1):
         start = time.time()
 
         # divide episodes among processes

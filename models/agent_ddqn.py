@@ -12,7 +12,7 @@ DEVICE  = "cuda" if torch.cuda.is_available() else "cpu"
 
 class AgentDDQN():
     
-    def __init__(self, epsilon=.25, arch=2, drop=False, batch_norm=False, steps=3):
+    def __init__(self, epsilon=1.0, arch=2, drop=False, batch_norm=False, steps=3):
       """
       initializes actions agents can take.
       from Agent random
@@ -51,10 +51,10 @@ class AgentDDQN():
         with open(self.save_path + "/data/Checkpoints/agent_ddqn.pt", "w") as f:
           pass
       
-      #creates Q_hat network and loads same weights as Q
-      self.Q_hat = nn.Sequential(nn.Flatten())
-      self.Q_hat.add_module("Linear", self.build_Q_net(arch=arch, drop=drop, batch_norm=batch_norm))
-      self.Q_hat.load_state_dict(self.Q.state_dict())
+      #creates Q_target network and loads same weights as Q
+      self.Q_target = nn.Sequential(nn.Flatten())
+      self.Q_target.add_module("Linear", self.build_Q_net(arch=arch, drop=drop, batch_norm=batch_norm))
+      self.Q_target.load_state_dict(self.Q.state_dict())
       
       self.env = Env_Emulator()  
       
@@ -74,7 +74,7 @@ class AgentDDQN():
         The state of the board
       """
       #decay epsilon
-      self.epsilon = self.epsilon * 0.9999 if self.epsilon > 0.1 else self.epsilon
+      self.epsilon = self.epsilon * 0.995 if self.epsilon > 0.1 else self.epsilon
 
       if np.random.uniform() < self.epsilon:
         #chooses random action
@@ -98,10 +98,15 @@ class AgentDDQN():
 
         states, actions, rewards, next_states, dones = self.env.sample()
 
-        Q_target_next = self.Q_hat(next_states).detach().max(1)[0].unsqueeze(1)
-        Q_target = rewards + 0.9 * (Q_target_next * (1 - dones))
-
         Q_exp = self.Q(states).gather(1, actions.view(-1, 1))
+
+        #get best action from Q for next states
+        next_actions = self.Q(next_states).detach().argmax(dim=1)
+        next_actions_t = torch.LongTensor(next_actions).reshape(-1, 1).to(DEVICE)
+
+        #get Q_target values for next states
+        Q_target = self.Q_target(next_states).gather(1, next_actions_t)
+        Q_target = rewards + 0.9 * (Q_target * (1 - dones))
 
         self.optimizer.zero_grad()
         Loss = nn.MSELoss()
@@ -109,9 +114,9 @@ class AgentDDQN():
         loss.backward()
         self.optimizer.step()
       
-        #updates Q_hat weights every # steps and saves weights
-        self.Q_hat.load_state_dict(self.Q.state_dict())
-        torch.save(self.Q_hat.state_dict(), self.save_path + '/data/Checkpoints/agent_ddqn.pt')
+        #updates Q_target weights every # steps and saves weights
+        self.Q_target.load_state_dict(self.Q.state_dict())
+        torch.save(self.Q_target.state_dict(), self.save_path + '/data/Checkpoints/agent_ddqn.pt')
         self.step_count = 0
 
       return action
