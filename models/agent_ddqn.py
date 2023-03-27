@@ -1,13 +1,18 @@
 import numpy as np
+import os
+import shutil
 import torch
 from torch import nn
-from agent_random import AgentRandom
-from env.board import Board
+from models.agent_random import AgentRandom
+from models.env.board import Board
 import torch.optim as optim
+import copy
 
-class AgentDQN(nn.Module):
+DEVICE  = "cuda" if torch.cuda.is_available() else "cpu"
+
+class AgentDDQN(nn.Module):
     
-    def __init__(self, epsilon=0.75, arch=2, drop=False, batch_norm=False):
+    def __init__(self, epsilon=.25, arch=2, drop=False, batch_norm=False, steps=3):
       """
       initializes actions agents can take.
       from Agent random
@@ -22,14 +27,40 @@ class AgentDQN(nn.Module):
         The probability that the agent chooses a random action
       arch : int
         integer specifying ammount of fully connected layers
+      drop : bool
+        Default False, indicating if dropout is wanted
+      batch_norm : bool
+        Default False, indicating if batch normalization is wanted
+      steps : int
+        Default 3, indicating how many steps to update the target network
       """
       super().__init__()
-      self.epsilon = epsilon
-      self.Q, self.Q_hat = self.Linear_blk(arch=arch, drop=drop, batch_norm=batch_norm)
-      self.env = Env_Emulator()  
-      self.optimizer = optim.SGD(self.Q.parameters(), lr=0.01) 
+      self.actions = np.array([0,1,2,3])
 
-    def choose_action(self, state=None,):
+      self.epsilon = epsilon
+      
+      self.Q = nn.Sequential(nn.Flatten())
+      self.Q.add_module("Linear", self.build_Q_net(arch=arch, drop=drop, batch_norm=batch_norm))
+      self.save_path = os.path.dirname(__file__)
+      if (os.path.exists(self.save_path + "/data/Checkpoints/agent_ddqn.pt") 
+        and os.path.getsize(self.save_path + "/data/Checkpoints/agent_ddqn.pt") > 0 ):
+        shutil.copy(self.save_path + "/data/Checkpoints/agent_ddqn.pt", self.save_path + "/data/Checkpoints/agent_ddqnBackUp.pt")
+        self.Q.load_state_dict(torch.load(self.save_path + "/data/Checkpoints/agent_ddqn.pt"))
+      else:
+        with open(self.save_path + "/data/Checkpoints/agent_ddqn.pt", "w") as f:
+          pass
+
+      self.Q_hat = nn.Sequential(nn.Flatten())
+      self.Q_hat.add_module("Linear", self.build_Q_net(arch=arch, drop=drop, batch_norm=batch_norm))
+      self.Q_hat.load_state_dict(self.Q.state_dict())
+      
+      self.env = Env_Emulator()  
+      
+      self.optimizer = optim.SGD(self.Q.parameters(), lr=0.001) 
+      self.steps = steps
+      self.step_count = 0
+
+    def choose_action(self, board, state=None):
       """
       chooses an action at random with probability = epsilon
       chooses optimal action with probability = 1 - epsilon
@@ -39,33 +70,50 @@ class AgentDQN(nn.Module):
       state : numpy array
         The state of the board
       """
+      #decay epsilon
+      self.epsilon = self.epsilon * 0.995 if self.epsilon > 0.1 else self.epsilon
+
       #chooses random action
-      if (np.random.uniform() < self.epsilon):
-        return super().choose_action(state)
+      if np.random.uniform() < self.epsilon:
+        return np.random.choice(self.actions)
       
       #converts state from numpy to torch tensor
-      state = torch.tensor(state, dtype=torch.float32, requires_grad=True, device='cuda')
+      state = torch.tensor(state, dtype=torch.float32, requires_grad=True, device=DEVICE).reshape(1, 4, 4)
 
       #chooses the optimal action
-      action = torch.argmax(self.Q(state))
+      self.Q.eval()
+      action = torch.argmax(self.Q(state)).item()
+      self.Q.train()
 
       #emulates the action chosen
-      self.env.step(state, action)
+      self.env.step(board, action)
 
-      if self.env.get_replay_buffer_length() % 3 == 0:
-        replay_buffer = torch.Tensor(self.env.get_replay_buffer())
-        minibatch = replay_buffer[torch.randint(0, replay_buffer.shape[0], 3)]
-        y = torch.zeros(minibatch.shape)
-        for i, s, a, r, s_prime, done in enumerate(minibatch):
-          if not done:
-            y[i] = r + 0.9 * torch.max(self.Q_hat(s_prime))[0]
-          else:
-            y[i] = r
-        
+      if self.env.get_replay_buffer_length() > 10:
+
+        states, actions, rewards, next_states, dones = self.env.sample()
+
+        Q_target_next = self.Q_hat(next_states).detach().max(1)[0].unsqueeze(1)
+        Q_target = rewards + 0.9 * (Q_target_next * (1 - dones))
+
+        Q_exp = self.Q(states).gather(1, actions.view(-1, 1))
+
+        self.optimizer.zero_grad()
+        Loss = nn.MSELoss()
+        loss = Loss(Q_exp, Q_target)
+        loss.backward()
+        self.optimizer.step()
+      
+      #updates Q_hat weights every # steps and saves weights
+      self.step_count += 1
+      if self.step_count == self.steps:
+        self.Q_hat.load_state_dict(self.Q.state_dict())
+        torch.save(self.Q_hat.state_dict(), self.save_path + '/data/Checkpoints/agent_ddqn.pt')
+        self.step_count = 0
+
       return action
     
 
-    def Linear_blk(self, arch:int, drop=False, batch_norm=False):
+    def build_Q_net(self, arch:int, drop=False, batch_norm=False):
       """
       Creates arch ammount of fully connected layers
       
@@ -83,28 +131,23 @@ class AgentDQN(nn.Module):
       tuples of nn.Sequentail() filled with linear network initalized with the
       same weights
       """
-      layers1, layers2 = [nn.Flatten], [nn.Flatten]
+      layers = []
       for _ in range(arch + 1):
-        layers1.append(nn.Linear(16, 16))
-        layers2.append(nn.Linear(16, 16))
-        layers2[-1].weight = nn.Parameter(layers1[-1].weight.data.clone())
+        layers.append(nn.Linear(16, 16))
 
         if batch_norm:
-          layers1.append(nn.BatchNorm1d(16))
-          layers2.append(nn.BatchNorm1d(16))
-        
-        layers1.append(nn.ReLU())
-        layers2.append(nn.ReLU())
+          layers.append(nn.BatchNorm1d(16))
+      
+        layers.append(nn.ReLU())
         
         if drop:
-          layers1.append(nn.Dropout(.5))
-          layers2.append(nn.Dropout(.5))
-      layers1.append(nn.Linear(16, 4))
-      layers2.append(nn.Linear(16, 4))
-      return (nn.Sequential(*layers1), nn.Sequential(*layers2))
+          layers.append(nn.Dropout(.5))
+      
+      layers.append(nn.Linear(16, 4))
+      return nn.Sequential(*layers)
     
 class Env_Emulator():
-  def __init__(self) -> None:
+  def __init__(self):
     self.replay_buffer = []
 
   def step(self, board, action):
@@ -121,13 +164,13 @@ class Env_Emulator():
     action : int
       An integer representing the action taken
     """
-    #makes clone of board
-    board = board.clone()
+    #makes copy of board
+    board = copy.deepcopy(board)
 
     #gets current info from board
     curr_score = board.score
     curr_max = board.get_max()
-    curr_state = board.get_state()
+    curr_state = torch.tensor(board.get_state(), dtype=torch.float32, requires_grad=True, device=DEVICE).reshape(1, 4, 4)
 
     #takes action
     board.move(action)
@@ -136,12 +179,44 @@ class Env_Emulator():
     done = board.terminal
     next_score = board.score
     next_max = board.get_max()
+    next_state = torch.tensor(board.get_state(), dtype=torch.float32, requires_grad=True, device=DEVICE).reshape(1, 4, 4)
 
-    reward = np.log2((next_score - curr_score)**2 + (next_max - curr_max))
+    # print(f'borad info:{curr_score, curr_max, curr_state, action, next_score, next_max, done}\n\n')
+    reward = (next_score - curr_score) + (next_max - curr_max)**2
 
-    self.replay_buffer.append((curr_state, action, reward, board.get_state(), done))
+    self.replay_buffer.append((curr_state, action, reward, next_state, done))
+    board = None
 
-  def reset(self):
+  def sample(self):
+    """
+    Samples a minibatch from replay memory
+    """
+    minibatch_size = torch.randint(1, len(self.replay_buffer), (1,)).item()
+    minibatch_ind = np.random.choice(list(range(len(self.replay_buffer))), size=minibatch_size, replace=False)
+    states, actions, rewards, next_states, dones = [], [], [], [], []
+    for i in minibatch_ind:
+      state, action, reward, next_state, done = self.replay_buffer[i]
+      states.append(state)
+      actions.append(action)
+      rewards.append(reward)
+      next_states.append(next_state)
+      dones.append(done)
+
+    if 10000 < self.get_replay_buffer_length() and np.random.uniform() < 0.1:
+      self.reset_buffer()
+
+    return (
+      torch.stack(states).reshape(len(states), 4, 4),
+      torch.tensor(actions, dtype=torch.long, device=DEVICE),
+      torch.tensor(rewards, dtype=torch.float32, device=DEVICE).unsqueeze(1),
+      torch.stack(next_states).reshape(len(next_states), 4, 4),
+      torch.tensor(dones, dtype=torch.int32, device=DEVICE).unsqueeze(1))
+  
+  
+  def reset_buffer(self):
+    """
+    resets replay memory
+    """
     self.replay_buffer = []
 
   def get_replay_buffer(self):
@@ -149,9 +224,3 @@ class Env_Emulator():
   
   def get_replay_buffer_length(self):
     return len(self.replay_buffer)
-  
-    
-    
-    
-
-        

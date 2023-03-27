@@ -37,9 +37,9 @@ def get_name(agent) -> str:
     agent: AgentObject
         An object representing an agent.
     """
-    agent_name, agent_str = "", str(agent)
-    for i in range(agent_str.find("Agent") + 5, len(agent_str)):
-        if ord(agent_str[i]) == ord(' '): break
+    agent_name, agent_str = "", str(agent).upper()
+    for i in range(agent_str.find("AGENT") + 5, len(agent_str)):
+        if ord(agent_str[i]) > ord('Z') or ord(agent_str[i]) < ord('A'): break
         agent_name += agent_str[i]
     return agent_name
 
@@ -69,7 +69,7 @@ class Plotter():
         self.num_steps = num_steps
         self.num_episodes = sum(num_steps.values())
         self.agent_name = get_name(agent)
-        self.my_path = os.path.dirname(os.path.dirname(__file__))
+        self.my_path = self.my_path = os.path.dirname(os.path.dirname(__file__))
     
     def plt_max_score(self, plt_type:str) -> None:
         """

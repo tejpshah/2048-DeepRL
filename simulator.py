@@ -2,6 +2,7 @@ import time
 import multiprocessing as mp
 from models.env.board import Board
 from models.agent_random import AgentRandom
+from models.agent_ddqn import AgentDDQN
 from models.utils.plotting import Plotter
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -12,10 +13,11 @@ class Simulator():
 
     VISUAL_X_COORD = 0
 
-    def __init__(self, agent=AgentRandom()):
+    def __init__(self, agent=AgentDDQN()):
 
         # selects which agent to run simulations from
-        self.agent = agent 
+        self.agent =  agent 
+        # self.agent = AgentRandom()
 
         # stores simulation info for plotting
         self.game_scores = mp.Manager().dict()
@@ -33,14 +35,15 @@ class Simulator():
 
             # gets state, and makes action based on state
             state = game.get_state() 
-            action = self.agent.choose_action(state)
+            # action = self.agent.choose_action(state)
+            action = self.agent.choose_action(game, state)
 
             # updates game board steps
             game.move(action)
             n_steps += 1
 
             # plot and save image of game at that time from board game function
-            game.visualize_board_save(n_steps)
+            # game.visualize_board_save(n_steps)
             
         # updates simulation info dictionaries 
         self.num_steps[n_steps] = self.num_steps.get(n_steps, 0) + 1
@@ -66,7 +69,9 @@ class Simulator():
         print(f"It took {end-start:.3f} seconds to run {num_episodes} simulations.")
 
     def run_episodes_worker(self, num_episodes):
-        for _ in range(num_episodes):
+        for i in range(num_episodes):
+            if i % 10 == 0:
+                print(f"Episode: {i}")
             self.run_episode()
 
     def get_simulation_info(self):
@@ -121,6 +126,6 @@ class Simulator():
 if __name__ == "__main__":
     S1 = Simulator()
     S1.run_episodes()
-    S1.visualize_board_video()
-    S1.get_simulation_info()
+    # S1.visualize_board_video()
+    # S1.get_simulation_info()
     S1.plt_sim()
