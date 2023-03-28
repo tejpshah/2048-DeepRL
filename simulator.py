@@ -7,17 +7,19 @@ from models.utils.plotting import Plotter
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
-# mport torch
+import torch
 
 class Simulator():
 
     VISUAL_X_COORD = 0
 
-    def __init__(self, agent=AgentDDQN()):
+    def __init__(self, agent=AgentDDQN(arch=(2, 64))):
 
         # selects which agent to run simulations from
         self.agent =  agent 
         # self.agent = AgentRandom()
+        
+        if torch.cuda.is_available(): mp.set_start_method('spawn')
 
         # stores simulation info for plotting
         self.game_scores = mp.Manager().dict()
@@ -50,7 +52,7 @@ class Simulator():
         self.max_scores[game.get_max()] = self.max_scores.get(game.get_max(), 0) + 1
         self.game_scores[game.score] = self.game_scores.get(game.score, 0) + 1
     
-    def run_episodes(self, num_episodes=50, num_procs=1):
+    def run_episodes(self, num_episodes=1000, num_procs=1):
         start = time.time()
 
         # divide episodes among processes
@@ -70,7 +72,7 @@ class Simulator():
 
     def run_episodes_worker(self, num_episodes):
         for i in range(num_episodes):
-            if i % 10 == 0:
+            if i % 100 == 0:
                 print(f"Episode: {i}")
             self.run_episode()
 
@@ -106,7 +108,7 @@ class Simulator():
         ax.text(self.VISUAL_X_COORD, .8, 'Current Score: ' + str(self.score), transform = ax.transAxes, color = 'black')
         ax.text(self.VISUAL_X_COORD, .7, 'Max Number: ' + str(self.max_number), transform = ax.transAxes, color = 'black')
         ax.text(self.VISUAL_X_COORD, .2, 'Last Move: ' + self.last_move, transform = ax.transAxes, color = 'black')
-        plt.savefig('figure' + str(num) + '.png')
+        plt.savefig(os.path.dirname(__file__) + 'data/Visual/' + 'figure' + str(num) + '.png')
         plt.close()
 
     # loop for visualizing all states of gameplay
@@ -128,4 +130,4 @@ if __name__ == "__main__":
     S1.run_episodes()
     # S1.visualize_board_video()
     # S1.get_simulation_info()
-    S1.plt_sim()
+    S1.plt_sim(plt_type='bar')

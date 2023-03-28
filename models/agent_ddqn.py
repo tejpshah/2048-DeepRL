@@ -12,7 +12,7 @@ DEVICE  = "cuda" if torch.cuda.is_available() else "cpu"
 
 class AgentDDQN():
     
-    def __init__(self, epsilon=1.0, arch=2, drop=False, batch_norm=False, steps=3):
+    def __init__(self, epsilon=1.0, arch=(2, 16), drop=False, batch_norm=False, steps=3):
       """
       initializes actions agents can take.
       from Agent random
@@ -25,8 +25,8 @@ class AgentDDQN():
       ----------
       epsilon : float
         The probability that the agent chooses a random action
-      arch : int
-        integer specifying ammount of fully connected layers
+      arch : tuple(int, int)
+        tuple of ints specifying (connected layers, neurons per layer)
       drop : bool
         Default False, indicating if dropout is wanted
       batch_norm : bool
@@ -40,21 +40,27 @@ class AgentDDQN():
       self.epsilon = epsilon
       
       #creates Q network and loads/backsup weights if they exist
+      self.arch = arch
       self.Q = nn.Sequential(nn.Flatten())
       self.Q.add_module("Linear", self.build_Q_net(arch=arch, drop=drop, batch_norm=batch_norm))
       self.save_path = os.path.dirname(__file__)
-      if (os.path.exists(self.save_path + "/data/Checkpoints/agent_ddqn.pt") 
-        and os.path.getsize(self.save_path + "/data/Checkpoints/agent_ddqn.pt") > 0 ):
-        shutil.copy(self.save_path + "/data/Checkpoints/agent_ddqn.pt", self.save_path + "/data/Checkpoints/agent_ddqnBackUp.pt")
-        self.Q.load_state_dict(torch.load(self.save_path + "/data/Checkpoints/agent_ddqn.pt"))
+      if (os.path.exists(self.save_path + f'/data/Checkpoints/agent_ddqn{self.arch[0]}, {self.arch[1]}.pt') 
+        and os.path.getsize(self.save_path + f'/data/Checkpoints/agent_ddqn{self.arch[0]}, {self.arch[1]}.pt') > 0 ):
+        shutil.copy(self.save_path 
+                    + f'/data/Checkpoints/agent_ddqn{self.arch[0]}, {self.arch[1]}.pt', self.save_path
+                    + f'/data/Checkpoints/agent_ddqn{self.arch[0]}, {self.arch[1]}BackUp.pt')
+        self.Q.load_state_dict(torch.load(self.save_path + f'/data/Checkpoints/agent_ddqn{self.arch[0]}, {self.arch[1]}.pt'))
       else:
-        with open(self.save_path + "/data/Checkpoints/agent_ddqn.pt", "w") as f:
+        with open(self.save_path + f'/data/Checkpoints/agent_ddqn{self.arch[0]}, {self.arch[1]}.pt', "w") as f:
           pass
       
       #creates Q_target network and loads same weights as Q
       self.Q_target = nn.Sequential(nn.Flatten())
       self.Q_target.add_module("Linear", self.build_Q_net(arch=arch, drop=drop, batch_norm=batch_norm))
       self.Q_target.load_state_dict(self.Q.state_dict())
+
+      #if gpu is available
+      self.Q, self.Q_target = self.Q.to(DEVICE), self.Q_target.to(DEVICE)
       
       self.env = Env_Emulator()  
       
@@ -74,8 +80,9 @@ class AgentDDQN():
         The state of the board
       """
       #decay epsilon
-      self.epsilon = self.epsilon * 0.995 if self.epsilon > 0.1 else self.epsilon
-
+      if self.epsilon > 0.01 and board.score == 0 and board.get_tilesum() in [4, 6, 8]:
+        self.epsilon = self.epsilon * 0.999
+    
       if np.random.uniform() < self.epsilon:
         #chooses random action
         action = np.random.choice(self.actions)
@@ -102,7 +109,7 @@ class AgentDDQN():
 
         #get best action from Q for next states
         next_actions = self.Q(next_states).detach().argmax(dim=1)
-        next_actions_t = torch.LongTensor(next_actions).reshape(-1, 1).to(DEVICE)
+        next_actions_t = torch.tensor(next_actions, dtype=torch.long, device=DEVICE).reshape(-1, 1)
 
         #get Q_target values for next states
         Q_target = self.Q_target(next_states).gather(1, next_actions_t)
@@ -116,20 +123,19 @@ class AgentDDQN():
       
         #updates Q_target weights every # steps and saves weights
         self.Q_target.load_state_dict(self.Q.state_dict())
-        torch.save(self.Q_target.state_dict(), self.save_path + '/data/Checkpoints/agent_ddqn.pt')
-        self.step_count = 0
+        torch.save(self.Q_target.state_dict(), self.save_path + f'/data/Checkpoints/agent_ddqn{self.arch[0]}, {self.arch[1]}.pt')
 
       return action
     
 
-    def build_Q_net(self, arch:int, drop=False, batch_norm=False):
+    def build_Q_net(self, arch , drop=False, batch_norm=False):
       """
       Creates arch ammount of fully connected layers
       
       Parameters
       ----------
-      arch : int
-        Integer specifying ammount of fully connected layers
+      arch : tuple(int,int)
+        Tuple tuple(int,int) specifying ammount of fully connected layers and neurons per layer
       drop : bool
         Default False, indicating if dropout is wanted
       batch_norm : bool
@@ -141,18 +147,20 @@ class AgentDDQN():
       same weights
       """
       layers = []
-      for _ in range(arch + 1):
-        layers.append(nn.Linear(16, 16))
+      cl, lw = arch
+      layers.append(nn.Linear(16, lw))
+      for _ in range(cl):
+        layers.append(nn.Linear(lw, lw))
 
         if batch_norm:
-          layers.append(nn.BatchNorm1d(16))
+          layers.append(nn.BatchNorm1d(lw))
       
         layers.append(nn.ReLU())
         
         if drop:
           layers.append(nn.Dropout(.5))
       
-      layers.append(nn.Linear(16, 4))
+      layers.append(nn.Linear(lw, 4))
       return nn.Sequential(*layers)
     
 class Env_Emulator():
@@ -210,7 +218,7 @@ class Env_Emulator():
       next_states.append(next_state)
       dones.append(done)
 
-    if 10000 < self.get_replay_buffer_length() and np.random.uniform() < 0.1:
+    if 10000 < self.get_replay_buffer_length():
       self.reset_buffer()
 
     return (
