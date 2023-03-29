@@ -13,7 +13,7 @@ class Simulator():
 
     VISUAL_X_COORD = 0
 
-    def __init__(self, agent=AgentDDQN(arch=(2, 64))):
+    def __init__(self, agent=AgentDDQN(epsilon=.5, arch=(3, 64), train=False)):
 
         # selects which agent to run simulations from
         self.agent =  agent 
@@ -52,7 +52,7 @@ class Simulator():
         self.max_scores[game.get_max()] = self.max_scores.get(game.get_max(), 0) + 1
         self.game_scores[game.score] = self.game_scores.get(game.score, 0) + 1
     
-    def run_episodes(self, num_episodes=1000, num_procs=1):
+    def run_episodes(self, num_episodes=1, num_procs=1):
         start = time.time()
 
         # divide episodes among processes
@@ -130,4 +130,4 @@ if __name__ == "__main__":
     S1.run_episodes()
     # S1.visualize_board_video()
     # S1.get_simulation_info()
-    S1.plt_sim(plt_type='bar')
+    S1.plt_sim()

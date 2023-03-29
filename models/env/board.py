@@ -1,5 +1,6 @@
 import numpy as np 
 import tkinter as tk
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -249,7 +250,7 @@ class Board():
 
         # Save the figure to a file with the specified number appended to the filename
         plt.rc('savefig', dpi=300)
-        plt.savefig('figure' + str(num) + '.png')
+        plt.savefig(os.path.dirname(__file__) + 'data/Visual/' + 'figure' + str(num) + '.png')
 
         # Close the figure to free up memory
         plt.close()
