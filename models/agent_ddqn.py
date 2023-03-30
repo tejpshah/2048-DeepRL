@@ -2,8 +2,8 @@ import numpy as np
 import os
 import shutil
 import torch
-from collections import deque
 from torch import nn
+from collections import deque
 from models.agent_random import AgentRandom
 from models.env.board import Board
 import torch.optim as optim
@@ -63,10 +63,12 @@ class AgentDDQN():
       
       self.env = Env_Emulator()  
       
-      self.optimizer = optim.SGD(self.Q.parameters(), lr=0.01, momentum=.9) 
+      self.optimizer = optim.Adam(self.Q.parameters(), lr=0.001) 
       
       self.steps = steps
       self.step_count = 0
+      
+      self.old_board = None
 
     def choose_action(self, board, state=None):
       """
@@ -78,10 +80,6 @@ class AgentDDQN():
       state : numpy array
         The state of the board
       """
-      #decay epsilon
-      if self.epsilon > 0.1 and board.score == 0 and board.get_tilesum() in [4, 6, 8]:
-        self.epsilon = self.epsilon * 0.985
-    
       if np.random.uniform() < self.epsilon:
         #chooses random action
         action = np.random.choice(self.actions)
@@ -94,6 +92,12 @@ class AgentDDQN():
         action = torch.argmax(self.Q(state)).item()
         self.Q.train()
 
+      if self.old_board is not None and id(board) != id(self.old_board):
+        self.epsilon = max(self.epsilon * 0.999, .1)
+        self.old_board = board
+      elif self.old_board is None:
+        self.old_board = board
+
       if self.train:
         #emulates the action chosen
         self.env.step(board, action)
@@ -102,7 +106,6 @@ class AgentDDQN():
 
         #Learn avery # steps
         if self.env.get_replay_buffer_length() > 10:
-
           states, actions, rewards, next_states, dones = self.env.sample()
 
           Q_exp = self.Q(states).gather(1, actions.view(-1, 1))
@@ -114,11 +117,11 @@ class AgentDDQN():
           #get Q_target values for next states)
           Q_target = self.Q_target(next_states).gather(1, next_actions_t)
 
-          Q_target = rewards + 0.9 * (Q_target * (1 - dones))
+          Q_target = rewards + 0.99 * Q_target * (1 - dones)
 
+          loss = nn.functional.mse_loss(Q_exp, Q_target)
+          
           self.optimizer.zero_grad()
-          Loss = nn.MSELoss()
-          loss = Loss(Q_exp, Q_target)
           loss.backward()
           self.optimizer.step()
 
@@ -127,6 +130,11 @@ class AgentDDQN():
           #updates Q_target weights every # steps and saves weights
           if self.step_count % self.steps == 0:
             self.Q_target.load_state_dict(self.Q.state_dict())
+
+          if self.step_count % 2000 == 0:
+            print(f'\nepsilon: {self.epsilon}')
+            print(f'loss: {loss}')
+            print(f'reward_avg: {rewards.mean()}')
 
       return action
     
@@ -144,14 +152,11 @@ class AgentDDQN():
       batch_norm : bool
         Default False, indicating if batch normalization is wanted
       
-      Returns
-      -------
-      tuples of nn.Sequentail() filled with linear network initalized with the
-      same weights
       """
       layers = []
       cl, lw = arch
       layers.append(nn.Linear(16, lw))
+      layers.append(nn.ReLU())
       for _ in range(cl):
         layers.append(nn.Linear(lw, lw))
 
@@ -189,7 +194,6 @@ class Env_Emulator():
 
     #gets current info from board
     prev_score = board_copy.score
-    # prev_max = board_copy.get_max()
     prev_state = torch.tensor(board_copy.get_state(), dtype=torch.float32, requires_grad=True, device=DEVICE).reshape(1, 4, 4)
 
     #takes action
@@ -201,11 +205,7 @@ class Env_Emulator():
     next_max = board_copy.get_max()
     next_state = torch.tensor(board_copy.get_state(), dtype=torch.float32, requires_grad=True, device=DEVICE).reshape(1, 4, 4)
 
-    if (prev_state == next_state).all():
-      #if no change in state, reward is -1
-      reward = -1
-    else:
-      reward = np.sqrt(2 * next_score - prev_score) * (next_max / 2048)
+    reward = self.get_reward(prev_score, next_score, prev_state, next_state, next_max, rf='2')
 
     self.replay_buffer.append((prev_state, action, reward, next_state, done))
 
@@ -234,6 +234,29 @@ class Env_Emulator():
       torch.stack(next_states).reshape(len(next_states), 4, 4),
       torch.tensor(dones, dtype=torch.int32, device=DEVICE).unsqueeze(1))
   
+  def get_reward(self, prev_score, next_score, prev_state, next_state, next_max, rf):
+    """calculates reward for taking a step in the game"""
+    if rf == '0':
+      if (prev_state == next_state).all():
+        #if no change in state, reward is -1 
+        reward = -1
+      else:
+        reward = np.sqrt(2 * next_score - prev_score) * (next_max / 2048)
+    elif rf == '1':
+      if (prev_state == next_state).all():
+        #if no change in state, reward is -1 
+        reward = -1
+      else:
+        reward = np.sqrt(2 * next_score - prev_score) * np.log2(next_max)
+    elif rf == '2':
+      if (prev_state == next_state).all():
+        #if no change in state, reward is -1 
+        reward = -1
+      else:
+        reward = np.log2(next_max)
+
+    return reward
+
   
   def reset_buffer(self):
     self.replay_buffer = []
@@ -243,3 +266,4 @@ class Env_Emulator():
   
   def get_replay_buffer_length(self):
     return len(self.replay_buffer)
+
