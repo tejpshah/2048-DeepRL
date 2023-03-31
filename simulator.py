@@ -2,7 +2,7 @@ import time
 import multiprocessing as mp
 from models.env.board import Board
 from models.agent_random import AgentRandom
-from models.agent_ddqn import AgentDDQN
+from models.agent_ddqn import AgentDoubleDQN
 from models.utils.plotting import Plotter
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -13,11 +13,10 @@ class Simulator():
 
     VISUAL_X_COORD = 0
 
-    def __init__(self, agent=AgentDDQN(epsilon=1, arch=(3, 32), drop=True, train=True)):
+    def __init__(self, agent=AgentRandom()):
 
         # selects which agent to run simulations from
-        self.agent =  agent 
-        # self.agent = AgentRandom()
+        self.agent =  AgentDoubleDQN()
         
         if torch.cuda.is_available(): mp.set_start_method('spawn')
 
@@ -37,8 +36,9 @@ class Simulator():
 
             # gets state, and makes action based on state
             state = game.get_state() 
-            # action = self.agent.choose_action(state)
-            action = self.agent.choose_action(game, state)
+
+            #choose action
+            action = self.agent.choose_action(state)
 
             # updates game board steps
             game.move(action)
@@ -52,7 +52,7 @@ class Simulator():
         self.max_scores[game.get_max()] = self.max_scores.get(game.get_max(), 0) + 1
         self.game_scores[game.score] = self.game_scores.get(game.score, 0) + 1
     
-    def run_episodes(self, num_episodes=2000, num_procs=1):
+    def run_episodes(self, num_episodes=10, num_procs=1):
         start = time.time()
 
         # divide episodes among processes
