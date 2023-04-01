@@ -181,13 +181,13 @@ GAMMA = 0.99
 TAU = 0.005
 LR = 1e-4
 
-env = gym.make('CartPole-v1')
+env = EnvironmentWrapper()
 
-n_actions = env.action_space.n
+n_actions = env.action_space_len
 state = env.reset()
 n_observations = len(state)
 
-Q_online = DoubleDQN(n_observations=n_observations, n_actions=n_actions, arch=(2, 128)).to(DEVICE)
+Q_online = DoubleDQN(n_observations=n_observations, n_actions=n_actions, arch=(3, 256)).to(DEVICE)
 Q_target = copy.deepcopy(Q_online).to(DEVICE)
 
 
