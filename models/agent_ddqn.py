@@ -15,7 +15,7 @@ class AgentDoubleDQN():
         3 : right
         '''
         self.actions = np.array([0,1,2,3])
-        self.Q_net = ddqn_base.DoubleDQN()
+        self.Q_net = ddqn_base.DoubleDQN(n_observations=16, n_actions=4, arch=(3,256))
     
     def choose_action(self, state=None):
         '''
