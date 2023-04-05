@@ -153,8 +153,8 @@ class Simulator():
 if __name__ == "__main__":
     S1 = Simulator()
     S1.run_episodes_worker(10)
-    # print(S1.gameplay_tensor)
+    print(S1.gameplay_tensor)
     S1.visualize_gameplay(S1.gameplay_tensor, S1.game_stats)
     S1.visualize_board_video()
-    # S1.get_simulation_info()
-    # S1.plt_sim()
+    S1.get_simulation_info()
+    S1.plt_sim()
