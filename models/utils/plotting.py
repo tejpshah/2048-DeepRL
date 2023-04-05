@@ -136,6 +136,6 @@ class Plotter():
             "# of steps" : dict(sorted(self.num_steps.items()))
         }
         
-        with open(self.my_path + f'\data\json\{self.agent_name} plot_info' + time + '.json', "w") as f:
+        with open(self.my_path + f'/data/json/{self.agent_name} plot_info' + time + '.json', "w") as f:
             json.dump(JSON_val, f, indent=4)
     
