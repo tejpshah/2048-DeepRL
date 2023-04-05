@@ -35,8 +35,9 @@ class Simulator():
 
         n_steps = 0 
 
-        current_game = torch.zeros(1, 4, 4)
-        current_stats = torch.zeros(1, 2)
+        current_game = torch.from_numpy(game.get_state().copy()).reshape([1, 4, 4])
+        current_stats = torch.tensor([[0, -1]])
+        done = False
 
         # runs an episode until termination 
         while not game.is_terminal_state():
@@ -58,8 +59,6 @@ class Simulator():
 
             newState = torch.from_numpy(state).reshape([1, 4, 4])
             current_game = torch.cat((current_game, newState), dim = 0)
-            # print(current_game)
-        # print(current_game)
         if game.get_score() > float(self.game_stats[-1, 0]):
             self.gameplay_tensor = current_game
             self.game_stats = current_stats
@@ -101,7 +100,11 @@ class Simulator():
         print(f"Max Scores Dictionary: {self.max_scores}")
         print(f"Episode Steps Dictionary: {self.num_steps}\n")
     
-    def visualize_board_video(self, fn = 'video.mp4'):
+    def visualize_board_video(self, fn = 'videos/video.mp4'):
+        i = 1
+        while Path(fn).is_file():
+            fn = fn[:-4] + str(i) + '.mp4'
+            i += 1
         os.system('ffmpeg -r 3 -i figure%d.png -vcodec mpeg4 -y '+fn)
         print("A video showing the agent's traversal is ready to view. Opening...")
         os.system('open '+fn)
@@ -133,6 +136,7 @@ class Simulator():
         ax.text(self.VISUAL_X_COORD, .8, 'Current Score: ' + str(float(score)), transform = ax.transAxes, color = 'black')
         ax.text(self.VISUAL_X_COORD, .7, 'Max Number: ' + str(max_number), transform = ax.transAxes, color = 'black')
         ax.text(self.VISUAL_X_COORD, .2, 'Last Move: ' + Board.MOVEMENT_DICT[float(last_move)], transform = ax.transAxes, color = 'black')
+        plt.rc('savefig', dpi=300)
         plt.savefig('figure' + str(num) + '.png')
         plt.close()
 
@@ -152,9 +156,9 @@ class Simulator():
 
 if __name__ == "__main__":
     S1 = Simulator()
-    S1.run_episodes_worker(10)
-    print(S1.gameplay_tensor)
+    S1.run_episodes_worker(1)
+    # print(S1.gameplay_tensor)
     S1.visualize_gameplay(S1.gameplay_tensor, S1.game_stats)
     S1.visualize_board_video()
-    S1.get_simulation_info()
-    S1.plt_sim()
+    # S1.get_simulation_info()
+    # S1.plt_sim()

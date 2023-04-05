@@ -26,7 +26,8 @@ class Board():
         0: 'up',
         1: 'down',
         2: 'left',
-        3: 'right'
+        3: 'right',
+        -1: 'no move'
     }
     
     VISUAL_X_COORD = 0
