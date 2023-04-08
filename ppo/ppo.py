@@ -217,3 +217,20 @@ class PPO_Buffer():
       # Return the training data and the cumulative reward
       return train_data, ep_reward / n
 
+def plot_training_cartpole_stats(stats_file, w_size=20):
+    """
+    Generate a line plot of the average reward over the number of steps taken during training.
+    """
+    with open(stats_file, "r") as f:
+        stats = json.load(f)
+
+    window_size = w_size 
+    rolling_avg_reward = np.convolve(stats["avg_reward"], np.ones(window_size)/window_size, mode='valid')
+    rolling_num_steps = stats["num_steps"][window_size-1:]
+
+    plt.plot(rolling_num_steps, rolling_avg_reward)
+    plt.xlabel("NumSteps")
+    plt.ylabel("Avg Reward")
+    plt.title("PPO CartPole Training")
+    plt.savefig("ppo_cartpole_training_smooth.png")
+    plt.show()
