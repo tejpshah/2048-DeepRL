@@ -32,7 +32,7 @@ class EnvironmentWrapper():
         # #network as a vector
         return self.board.state.flatten()
     
-    def step(self, action):
+    def step(self, action, r1 = True):
 
         # See current score 
         current_score = self.board.score
@@ -48,7 +48,7 @@ class EnvironmentWrapper():
             self.num_steps_max_tile_did_not_change += 1 
         else: self.num_steps_max_tile_did_not_change = 1 
 
-        def reward():
+        def reward1():
             getHigherTiles = np.log2(self.board.max_number)
             moreQuickly = 1 / self.num_steps_max_tile_did_not_change
             withBigScoreGain = self.board.score - current_score
@@ -58,7 +58,7 @@ class EnvironmentWrapper():
             return self.board.score - current_score
         
         # Get the reward
-        reward = reward2() 
+        reward = reward2() if r1 == False else reward1()
 
         # Get the next state
         next_state = self.board.state.flatten()

@@ -76,7 +76,7 @@ if __name__ == "__main__":
     ppobuffer = PPO_Buffer() 
 
     # train the model with PPO
-    train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer, model_path="ppo_2048_model", stats_path ="ppo_2048_stats.json")
+    train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer, model_path="ppo_2048_model_reward1", stats_path ="ppo_2048_stats.json")
 
     ###  PLOTS TRAINING AND EVALUATES TRAINED MODEL FOR PROXIMAL POLICY OPTIMIZATION ###
     
