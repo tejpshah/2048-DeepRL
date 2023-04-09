@@ -233,7 +233,7 @@ class PPO_Buffer():
 
 ### HELPER FUNCTIONS ###
 
-def train_ppo(env, model, ppo_trainer, ppo_buffer, n_episodes=N_EPISODES, num_rollouts=NUM_ROLLOUTS, print_freq=PRINT_FREQ, save_freq=SAVE_FREQ, save_model=True, model_path="data/ppo-cartpole/cartpole_model", stats_path="data/ppo-cartpole/cartpole_stats.json"):
+def train_ppo(env, model, ppo_trainer, ppo_buffer, n_episodes=N_EPISODES, num_rollouts=NUM_ROLLOUTS, print_freq=PRINT_FREQ, save_freq=SAVE_FREQ, save_model=True, model_path="cartpole_model", stats_path="cartpole_stats.json"):
 
     num_steps = 0
     ep_rewards = []
@@ -284,7 +284,7 @@ def plot_training_stats(stats_file='cartpole_stats.json', w_size=20, dpi=300):
     plt.xlabel("NumSteps")
     plt.ylabel("Avg Reward")
     plt.title("PPO CartPole Training")
-    plt.savefig("data/ppo-cartpole/ppo_cartpole_training_smooth.png", dpi=dpi)
+    plt.savefig("ppo_cartpole_training_smooth.png", dpi=dpi)
     plt.show()
 
 def evaluate_trained_model(model_path, env_name, num_episodes=1000):
@@ -356,14 +356,13 @@ if __name__ == "__main__":
   # train the model with PPO
   train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer)
 
-
   ###  PLOTS TRAINING AND EVALUATES TRAINED MODEL FOR PROXIMAL POLICY OPTIMIZATION ###
 
   # plot the training cartpole stats
-  plot_training_stats('data/ppo-cartpole/cartpole_stats.json')
+  plot_training_stats('cartpole_stats.json')
 
   # evaluate the model
-  evaluate_trained_model(model_path="data/ppo-cartpole/cartpole_model_250.pt", env_name = 'CartPole-v0', num_episodes=1000)
+  evaluate_trained_model(model_path="cartpole_model_250.pt", env_name = 'CartPole-v0', num_episodes=1000)
   
 
 

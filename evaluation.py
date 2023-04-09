@@ -1,7 +1,7 @@
 import time 
 # import multiprocessing as mp
 from models.env.board import Board
-from models.agent_random import AgentRandom
+from models.agents import AgentRandom
 from models.utils.plotting import Plotter
 import matplotlib.pyplot as plt
 import pandas as pd

@@ -1,7 +1,7 @@
 import time 
 import multiprocessing as mp
 from models.env.board import Board
-from models.agent_random import AgentRandom
+from models.agents import AgentRandom
 from models.utils.plotting import Plotter
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -41,7 +41,7 @@ class Simulator():
         while not game.is_terminal_state():
 
             # gets state, and makes action based on state
-            state = game.get_state() 
+            state = game.get_state().flatten()
             action = self.agent.choose_action(state)
 
             # updates game board steps
