@@ -35,18 +35,18 @@ if __name__ == "__main__":
 
     # Hyperparameters for model
     SHARED_HIDDEN_LAYER_SIZE= 512
-    NUM_SHARED_LAYERS = 2
-    ACTIVATION = nn.ReLU()
+    NUM_SHARED_LAYERS = 3
+    ACTIVATION = nn.Tanh()
     PPO_CLIP_VAL = 0.20
     PPO_POLICY_LR = 3e-4
     PPO_VALUE_LR = 5e-3
-    PPO_EPOCHS = 8
-    VAL_EPOCHS = 8
-    KL_TARGET = 0.01
-    N_EPISODES = 100
+    PPO_EPOCHS = 56
+    VAL_EPOCHS = 56
+    KL_TARGET = 0.02
+    N_EPISODES = 10000
     PRINT_FREQ = 1
-    NUM_ROLLOUTS = 1
-    SAVE_FREQ = 25 
+    NUM_ROLLOUTS = 8
+    SAVE_FREQ = 200 
 
     ###  TRAINS MODEL USING PROXIMAL POLICY OPTIMIZATION FOR 2048 ###
 
@@ -76,7 +76,7 @@ if __name__ == "__main__":
     ppobuffer = PPO_Buffer() 
 
     # train the model with PPO
-    train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer, model_path="ppo_2048_model_reward1", stats_path ="ppo_2048_stats.json")
+    train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer, model_path="ppo_2048_model_reward2", stats_path ="ppo_2048_stats_reward2.json")
 
     ###  PLOTS TRAINING AND EVALUATES TRAINED MODEL FOR PROXIMAL POLICY OPTIMIZATION ###
     

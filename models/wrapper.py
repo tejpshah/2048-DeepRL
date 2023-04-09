@@ -58,7 +58,7 @@ class EnvironmentWrapper():
             return self.board.score - current_score
         
         # Get the reward
-        reward = reward2() if r1 == False else reward1()
+        reward = reward2()
 
         # Get the next state
         next_state = self.board.state.flatten()
