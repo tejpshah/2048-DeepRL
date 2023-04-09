@@ -1,3 +1,5 @@
+# Note: This file works
+
 import numpy as np 
 from env.board import Board
 
@@ -38,6 +40,9 @@ class EnvironmentWrapper():
         # Move the board
         self.board.move(action)
 
+        # Change the max tile
+        self.board.max_number = self.board.get_max()
+
         # Update if max tile did not change
         if self.board.max_number == self.prev_max_tile:
             self.num_steps_max_tile_did_not_change += 1 
@@ -48,9 +53,12 @@ class EnvironmentWrapper():
             moreQuickly = 1 / self.num_steps_max_tile_did_not_change
             withBigScoreGain = self.board.score - current_score
             return ( getHigherTiles**(moreQuickly) ) * withBigScoreGain
+
+        def reward2():
+            return self.board.score - current_score
         
         # Get the reward
-        reward = reward() 
+        reward = reward2() 
 
         # Get the next state
         next_state = self.board.state.flatten()

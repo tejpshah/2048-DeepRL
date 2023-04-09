@@ -1,3 +1,12 @@
+# Note: This file is a WIP
+
+import torch
+import torch.nn as nn 
+import torch.optim as optim 
+from torch.distributions.categorical import Categorical 
+import numpy as np 
+import matplotlib.pyplot as plt
+import json
 from wrapper import EnvironmentWrapper
 from train_ppo_base import ActorCritic, PPO_Buffer, PPO_Trainer, train_ppo
 
@@ -20,21 +29,24 @@ def plot_2048_training(stats_file='ppo_2048_stats.json', w_size=20, dpi=300):
     plt.show()
 
 if __name__ == "__main__":
+    
+    # set up device on which to update 
+    DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # Hyperparameters for model
     SHARED_HIDDEN_LAYER_SIZE= 512
-    NUM_SHARED_LAYERS = 3
+    NUM_SHARED_LAYERS = 2
     ACTIVATION = nn.ReLU()
     PPO_CLIP_VAL = 0.20
     PPO_POLICY_LR = 3e-4
-    PPO_VALUE_LR = 3e-3
-    PPO_EPOCHS = 32
-    VAL_EPOCHS = 32
-    KL_TARGET = 0.02
-    N_EPISODES = 250
+    PPO_VALUE_LR = 5e-3
+    PPO_EPOCHS = 8
+    VAL_EPOCHS = 8
+    KL_TARGET = 0.01
+    N_EPISODES = 100
     PRINT_FREQ = 1
-    NUM_ROLLOUTS = 2
-    SAVE_FREQ = 50 
+    NUM_ROLLOUTS = 1
+    SAVE_FREQ = 25 
 
     ###  TRAINS MODEL USING PROXIMAL POLICY OPTIMIZATION FOR 2048 ###
 
@@ -43,7 +55,7 @@ if __name__ == "__main__":
 
     # set up model
     model = ActorCritic(env.observation_space_len, 
-                        env.action_space.action_space_len, 
+                        env.action_space_len, 
                         hidden_layer_size=SHARED_HIDDEN_LAYER_SIZE, 
                         num_shared_layers=NUM_SHARED_LAYERS, 
                         activation_function=ACTIVATION)
@@ -67,7 +79,7 @@ if __name__ == "__main__":
     train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer, model_path="ppo_2048_model", stats_path ="ppo_2048_stats.json")
 
     ###  PLOTS TRAINING AND EVALUATES TRAINED MODEL FOR PROXIMAL POLICY OPTIMIZATION ###
-
+    
     # plot the training cartpole stats
     plot_2048_training('ppo_2048_stats.json')
 
