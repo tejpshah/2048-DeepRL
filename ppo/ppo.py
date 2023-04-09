@@ -1,4 +1,3 @@
-
 # standard imports 
 import gym 
 import numpy as np 
@@ -12,6 +11,21 @@ from torch.distributions.categorical import Categorical
 # logging imports 
 import json
 import matplotlib.pyplot as plt
+
+# Hyperparameters for model
+SHARED_HIDDEN_LAYER_SIZE= 128
+NUM_SHARED_LAYERS = 2
+ACTIVATION = nn.ReLU()
+PPO_CLIP_VAL = 0.20
+PPO_POLICY_LR = 3e-4
+PPO_VALUE_LR = 3e-3
+PPO_EPOCHS = 20
+VAL_EPOCHS = 20
+KL_TARGET = 0.02
+N_EPISODES = 250
+PRINT_FREQ = 1
+NUM_ROLLOUTS = 4
+SAVE_FREQ = 50 
 
 # set up device on which to update 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -217,7 +231,43 @@ class PPO_Buffer():
       # Return the training data and the cumulative reward
       return train_data, ep_reward / n
 
-def plot_training_cartpole_stats(stats_file, w_size=20):
+def train_ppo(env, model, ppo_trainer, ppo_buffer, n_episodes=N_EPISODES, num_rollouts=NUM_ROLLOUTS, print_freq=PRINT_FREQ, save_freq=SAVE_FREQ, save_model=True, model_path="cartpole_model", stats_path="cartpole_stats.json"):
+
+    num_steps = 0
+    ep_rewards = []
+    stats = {"avg_reward": [], "num_steps": []}
+
+    for step in range(n_episodes):
+
+        # Generate rollouts and collect training data
+        train_data, reward = ppo_buffer.generate_n_rollouts(model, env, n=num_rollouts)
+        ep_rewards.append(reward)
+
+        # Randomize the order of the training data
+        states, actions, rewards, gaes, log_probs = ppo_buffer.randomize_training_data_order(train_data)
+
+        # Train the PPO model
+        ppo_trainer.train_policy(states, actions, log_probs, gaes)
+        ppo_trainer.train_value(states, rewards)
+
+        num_steps += len(train_data[0])
+
+        if (step + 1) % print_freq == 0:
+            avg_reward = np.mean(ep_rewards[-print_freq:])
+            stats["avg_reward"].append(avg_reward)
+            stats["num_steps"].append(num_steps)
+
+            print(f"Episode {step+1} | Avg Reward {avg_reward:.1f} | NumSteps {num_steps}")
+
+            # Save model every `save_freq` episodes
+            if save_model and (step + 1) % save_freq == 0:
+                torch.save(model.state_dict(), f"{model_path}_{step+1}.pt")
+
+            # Save statistics to JSON file
+            with open(stats_path, "w") as f:
+                json.dump(stats, f)
+
+def plot_training_stats(stats_file='cartpole_stats.json', w_size=20, dpi=300):
     """
     Generate a line plot of the average reward over the number of steps taken during training.
     """
@@ -232,5 +282,84 @@ def plot_training_cartpole_stats(stats_file, w_size=20):
     plt.xlabel("NumSteps")
     plt.ylabel("Avg Reward")
     plt.title("PPO CartPole Training")
-    plt.savefig("ppo_cartpole_training_smooth.png")
+    plt.savefig("ppo_cartpole_training_smooth.png", dpi=dpi)
     plt.show()
+
+
+def evaluate_trained_model(model_path, env_name, num_episodes=10):
+    """
+    Evaluates a trained PPO model on the specified environment using the saved model weights.
+    """
+
+    # Set up the environment
+    env = gym.make(env_name)
+
+    # Set up the model
+    model = ActorCritic(env.observation_space.shape[0], 
+                        env.action_space.n, 
+                        hidden_layer_size=SHARED_HIDDEN_LAYER_SIZE, 
+                        num_shared_layers=NUM_SHARED_LAYERS, 
+                        activation_function=ACTIVATION)
+    model = model.to(DEVICE)
+
+    # Load saved model weights
+    model.load_state_dict(torch.load(model_path))
+
+    # Evaluate the model
+    rewards = []
+    for _ in range(num_episodes):
+        obs = env.reset()
+        done = False
+        total_reward = 0
+        while not done:
+            logits, _ = model(torch.tensor([obs], dtype=torch.float32, device=DEVICE))
+            act = torch.argmax(logits, dim=1).item()
+            obs, reward, done, _ = env.step(act)
+            total_reward += reward
+        rewards.append(total_reward)
+
+    avg_reward = np.mean(rewards)
+    print("Average reward:", avg_reward)
+
+    return avg_reward
+
+if __name__ == "__main__":
+
+
+  '''
+  ###  TRAINS MODEL USING PROXIMAL POLICY OPTIMIZATION FOR CARTPOLE ###
+
+  # set up environment
+  env = gym.make('CartPole-v0')
+
+  # set up model
+  model = ActorCritic(env.observation_space.shape[0], 
+                      env.action_space.n, 
+                      hidden_layer_size=SHARED_HIDDEN_LAYER_SIZE, 
+                      num_shared_layers=NUM_SHARED_LAYERS, 
+                      activation_function=ACTIVATION)
+  model = model.to(DEVICE)  
+
+  # set up PPO trainer
+  ppo = PPO_Trainer(
+      actor_critic = model, 
+      ppo_clip_val = PPO_CLIP_VAL,
+      ppo_lr = PPO_POLICY_LR,
+      val_lr = PPO_VALUE_LR,
+      ppo_epochs = PPO_EPOCHS, 
+      val_epochs = VAL_EPOCHS,
+      kl_earlystopping = KL_TARGET
+  )
+
+  # set up buffer
+  ppobuffer = PPO_Buffer() 
+
+  # train the model with PPO
+  train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer)
+  '''
+
+  # plot the training cartpole stats
+  plot_training_stats('cartpole_stats.json')
+
+  # evaluate the model
+  evaluate_trained_model(model_path="cartpole_model_250.pt", env_name = 'CartPole-v0', num_episodes=1000)
