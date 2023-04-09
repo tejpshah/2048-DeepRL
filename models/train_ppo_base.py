@@ -287,7 +287,7 @@ def plot_training_stats(stats_file='cartpole_stats.json', w_size=20, dpi=300):
     plt.savefig("data/ppo-cartpole/ppo_cartpole_training_smooth.png", dpi=dpi)
     plt.show()
 
-def evaluate_trained_model(model_path, env_name, num_episodes=10):
+def evaluate_trained_model(model_path, env_name, num_episodes=1000):
     """
     Evaluates a trained PPO model on the specified environment using the saved model weights.
     """
