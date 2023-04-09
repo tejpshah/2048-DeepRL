@@ -33,7 +33,6 @@ class Board():
 
     def init_board(self, rows=4, cols=4):
         '''initializes board of 0s with two random tiles'''
-        np.random.seed(2048)
         self.state = np.zeros((rows,cols))
         self.init_tile()
         self.init_tile() 
