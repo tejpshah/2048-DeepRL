@@ -189,17 +189,17 @@ if __name__ == "__main__":
   plt.ion()
   
   SAVE_PATH = os.path.join(os.path.dirname(__file__) + '\data\Checkpoints',
-                            'Test4_4.pt')
+                            'Test4_5.pt')
   TRANSITION = namedtuple('Transition',
                            ('state', 'action', 'reward', 'next_state'))
 
   env = EnvironmentWrapper()
 
   # Hyperparameters
-  CAPACITY = 100000
+  CAPACITY = 50000
   BATCH_SIZE = 128
   CLIPPING = 1000
-  EPS_START = 0.2
+  EPS_START = 0.9
   EPS_END = 0.01
   EPS_DECAY = 20000
   GAMMA = 0.99
@@ -307,7 +307,7 @@ if __name__ == "__main__":
 
 
   """Training loop"""
-  num_episodes = 5000
+  num_episodes = 1
 
   for i_episode in range(num_episodes):
     state = env.reset()

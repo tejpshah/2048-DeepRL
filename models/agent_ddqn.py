@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from . import ddqn_base 
 
-SAVE_PATH = os.path.dirname(os.path.abspath(__file__)) + '\data\Checkpoints\Test4_3_4000.pt'
+SAVE_PATH = os.path.dirname(os.path.abspath(__file__)) + '\data\Checkpoints\Test4_5.pt'
 
 class AgentDoubleDQN():
     def __init__(self):
@@ -19,6 +19,9 @@ class AgentDoubleDQN():
         '''
         self.actions = np.array([0,1,2,3])
         self.Q_net = ddqn_base.DoubleDQN(n_observations=288, n_actions=4, arch=(1,256))
+        self.load_params()
+        self.prev_state = None
+        self.count = 0
     
     def choose_action(self, state=None):
         '''
@@ -26,7 +29,13 @@ class AgentDoubleDQN():
         for the baseline random agent, no action is given.
         for all other agents, override this method to include observation.
         '''
-        if np.random.uniform() < 0.05:
+        if self.prev_state is not None and (self.prev_state == state).all():
+           self.count += 1
+        else:
+           self.prev_state = state.copy()
+           self.count = 0
+        
+        if self.count > 5:
           return np.random.choice(self.actions) 
         else:
           state = np.log2(state, out=np.zeros_like(state), where=(state != 0)).reshape(-1).astype(int)
@@ -34,10 +43,10 @@ class AgentDoubleDQN():
           state = torch.tensor(state.flatten(), dtype=torch.float32).unsqueeze(0)
           return torch.argmax(self.Q_net(state)).item()
         
-    def load_params(net):
+    def load_params(self):
       if (os.path.exists(SAVE_PATH) and os.path.getsize(SAVE_PATH) > 0 ):
         print('Weights found, loading weights...')
-        net.load_state_dict(torch.load(SAVE_PATH))
+        self.Q_net.load_state_dict(torch.load(SAVE_PATH))
       else:
         #if no weights are found, create a file to indicate that no weights are found
         raise Exception('No weights found')

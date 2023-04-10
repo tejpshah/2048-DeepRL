@@ -125,7 +125,7 @@ class Plotter():
         outfile = self.my_path + f'/data/plots/{self.agent_name} GameScore' + time + '.jpg'
         plt.savefig(outfile)
 
-    def save_info(self):
+    def save_json_info(self):
         """
         Save information about the maximum and game scores, and the number of steps to a JSON file.
         """
@@ -137,7 +137,7 @@ class Plotter():
             "Game Scores": dict(sorted(self.game_scores.items())),
             "# of steps" : dict(sorted(self.num_steps.items()))
         }
-        
-        with open(self.my_path + f'/data/JSON/{self.agent_name} plot_info' + time + '.json', "w") as f:
+        JSON_NAME = self.my_path + f'/data/json/{self.agent_name} plot_info' + time + '.json'
+        with open(self.my_path + f'/data/json/{self.agent_name} plot_info' + time + '.json', "w") as f:
             json.dump(JSON_val, f, indent=4)
     
