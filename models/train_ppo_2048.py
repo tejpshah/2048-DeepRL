@@ -37,7 +37,7 @@ if __name__ == "__main__":
     DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # Hyperparameters for model
-    SHARED_HIDDEN_LAYER_SIZE= 256
+    SHARED_HIDDEN_LAYER_SIZE= 512
     NUM_SHARED_LAYERS = 2
     ACTIVATION = nn.ReLU()
     PPO_CLIP_VAL = 0.20
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     N_EPISODES = 15000
     PRINT_FREQ = 1
     NUM_ROLLOUTS = 8
-    SAVE_FREQ = 200 
+    SAVE_FREQ = 100
 
     ###  TRAINS MODEL USING PROXIMAL POLICY OPTIMIZATION FOR 2048 ###
 
