@@ -10,9 +10,8 @@ import matplotlib.pyplot as plt
 import json
 
 # internal modules 
-from . import wrapper.EnvironmentWrapper as EnvironmentWrapper
-from . import train_ppo_base 
-
+from wrapper import EnvironmentWrapper
+from train_ppo_base import * 
 
 def plot_2048_training(stats_file='ppo_2048_stats.json', w_size=20, dpi=300):
     """
@@ -38,19 +37,19 @@ if __name__ == "__main__":
     DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # Hyperparameters for model
-    SHARED_HIDDEN_LAYER_SIZE= 512
-    NUM_SHARED_LAYERS = 3
+    SHARED_HIDDEN_LAYER_SIZE= 256
+    NUM_SHARED_LAYERS = 2
     ACTIVATION = nn.ReLU()
-    PPO_CLIP_VAL = 0.15
-    PPO_POLICY_LR = 3e-4
-    PPO_VALUE_LR = 5e-3
-    PPO_EPOCHS = 32
-    VAL_EPOCHS = 32
-    KL_TARGET = 0.01
-    N_EPISODES = 10000
+    PPO_CLIP_VAL = 0.20
+    PPO_POLICY_LR = 1e-5
+    PPO_VALUE_LR = 1e-5
+    PPO_EPOCHS = 48
+    VAL_EPOCHS = 48
+    KL_TARGET = 0.02
+    N_EPISODES = 12000
     PRINT_FREQ = 1
-    NUM_ROLLOUTS = 8
-    SAVE_FREQ = 100 
+    NUM_ROLLOUTS = 16
+    SAVE_FREQ = 500 
 
     ###  TRAINS MODEL USING PROXIMAL POLICY OPTIMIZATION FOR 2048 ###
 
@@ -80,10 +79,10 @@ if __name__ == "__main__":
     ppobuffer = PPO_Buffer() 
 
     # train the model with PPO
-    train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer,n_episodes=N_EPISODES, num_rollouts=NUM_ROLLOUTS, print_freq=PRINT_FREQ, save_freq=SAVE_FREQ, save_model=True, model_path="ppo_2048_model_reward1", stats_path ="ppo_2048_stats_reward1.json")
+    train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer,n_episodes=N_EPISODES, num_rollouts=NUM_ROLLOUTS, print_freq=PRINT_FREQ, save_freq=SAVE_FREQ, save_model=True, model_path="ppo_2048_model_reward3", stats_path ="ppo_2048_stats_reward3.json")
     
     ###  PLOTS TRAINING AND EVALUATES TRAINED MODEL FOR PROXIMAL POLICY OPTIMIZATION ###
     
     # plot the training cartpole stats
-    plot_2048_training('ppo_2048_stats_reward1.json')
+    plot_2048_training('ppo_2048_stats_reward3.json')
 

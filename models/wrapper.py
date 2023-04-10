@@ -74,5 +74,4 @@ class EnvironmentWrapper():
         # Return the next state, reward, and done flag
         return next_state, reward, done, None
 
-if __name__ == "__main__":
 
