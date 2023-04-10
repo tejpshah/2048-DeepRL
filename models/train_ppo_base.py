@@ -359,8 +359,6 @@ class AgentPPO():
 
     def choose_action(self, state):
 
-        print("Choosing actions....")
-
         if self.prev_state is not None and (self.prev_state == state).all():
            self.count += 1
         else:

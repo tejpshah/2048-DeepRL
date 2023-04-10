@@ -2,7 +2,7 @@ import json
 import matplotlib.pyplot as plt
 
 # Load data from JSON file
-with open('data.json') as f:
+with open('data_ppo.json') as f:
     data = json.load(f)
 
 # Plot histogram of # of steps

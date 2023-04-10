@@ -1,7 +1,9 @@
 import time 
+import torch.nn as nn 
 # import multiprocessing as mp
 from models.env.board import Board
-from models.agents import AgentRandom
+from models.agent_random import AgentRandom
+from models.train_ppo_base import AgentPPO
 from models.utils.plotting import Plotter
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -155,7 +157,32 @@ class Simulator():
 
 
 if __name__ == "__main__":
-    S1 = Simulator()
+    DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    # PPO Hyperparameters
+    SHARED_HIDDEN_LAYER_SIZE= 256
+    NUM_SHARED_LAYERS = 1
+    ACTIVATION = nn.ReLU()
+    PPO_CLIP_VAL = 0.10
+    PPO_POLICY_LR = 1e-5
+    PPO_VALUE_LR = 5e-5
+    PPO_EPOCHS = 60
+    VAL_EPOCHS = 60
+    KL_TARGET = 0.02
+    N_EPISODES = 15000
+    PRINT_FREQ = 1
+    NUM_ROLLOUTS = 10
+    SAVE_FREQ = 500 
+
+    ppo_agent = AgentPPO(obs_space_size=16*18, 
+                         act_space_size=4, 
+                         hidden_layer_size=SHARED_HIDDEN_LAYER_SIZE,
+                         num_shared_layers=NUM_SHARED_LAYERS,
+                         activation_function=ACTIVATION,
+                         device = DEVICE,
+                         model_path = 'ppo_2048.pt')
+
+    S1 = Simulator(ppo_agent)
     S1.run_episodes_worker(1)
     # print(S1.gameplay_tensor)
     S1.visualize_gameplay(S1.gameplay_tensor, S1.game_stats)
