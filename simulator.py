@@ -2,11 +2,13 @@ import time
 import multiprocessing as mp
 from models.env.board import Board
 from models.agents import AgentRandom
+from models.train_ppo_base import AgentPPO
 from models.utils.plotting import Plotter
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
 import torch
+import torch.nn as nn 
 
 class Simulator():
 
@@ -38,11 +40,13 @@ class Simulator():
         # current_game_stats = torch.zeros(1, 2)
 
         # runs an episode until termination 
-        while not game.is_terminal_state():
+        while not game.is_terminal_state() and n_steps < 1200:
 
             # gets state, and makes action based on state
             state = game.get_state().flatten()
             action = self.agent.choose_action(state)
+
+            # print(state, action)
 
             # updates game board steps
             game.move(action)
@@ -137,8 +141,35 @@ class Simulator():
 
 
 if __name__ == "__main__":
-    S1 = Simulator()
-    S1.run_episodes()
+
+    DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    # PPO Hyperparameters
+    SHARED_HIDDEN_LAYER_SIZE= 1024
+    NUM_SHARED_LAYERS = 3
+    ACTIVATION = nn.ReLU()
+    PPO_CLIP_VAL = 0.20
+    PPO_POLICY_LR = 1e-5
+    PPO_VALUE_LR = 1e-4
+    PPO_EPOCHS = 40
+    VAL_EPOCHS = 40
+    KL_TARGET = 0.02
+    N_EPISODES = 10000
+    PRINT_FREQ = 1
+    NUM_ROLLOUTS = 8
+    SAVE_FREQ = 50 
+
+    ppo_agent = AgentPPO(obs_space_size=16, 
+                         act_space_size=4, 
+                         hidden_layer_size=SHARED_HIDDEN_LAYER_SIZE,
+                         num_shared_layers=NUM_SHARED_LAYERS,
+                         activation_function=ACTIVATION,
+                         device = DEVICE,
+                         model_path = 'ppo_2048.pt')
+
+    S1 = Simulator(ppo_agent)
+    S1.run_episodes(num_episodes=1000)
     # S1.visualize_board_video()
     S1.get_simulation_info()
     S1.plt_sim()
+

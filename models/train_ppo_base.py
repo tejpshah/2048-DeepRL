@@ -326,6 +326,24 @@ def evaluate_trained_model(model_path, env_name, num_episodes=1000):
 
     return avg_reward
 
+def plot_2048_training(stats_file='ppo_2048_stats.json', w_size=20, dpi=300):
+    """
+    Generate a line plot of the average reward over the number of steps taken during training.
+    """
+    with open(stats_file, "r") as f:
+        stats = json.load(f)
+
+    window_size = w_size 
+    rolling_avg_reward = np.convolve(stats["avg_reward"], np.ones(window_size)/window_size, mode='valid')
+    rolling_num_steps = stats["num_steps"][window_size-1:]
+
+    plt.plot(rolling_num_steps, rolling_avg_reward)
+    plt.xlabel("NumSteps")
+    plt.ylabel("Avg Reward")
+    plt.title("PPO 2048 Training")
+    plt.savefig("ppo_2048_training_smooth.png", dpi=dpi)
+    plt.show()
+
 if __name__ == "__main__":
   
   ###  TRAINS MODEL USING PROXIMAL POLICY OPTIMIZATION FOR CARTPOLE ###
@@ -365,6 +383,4 @@ if __name__ == "__main__":
 
   # evaluate the model
   evaluate_trained_model(model_path="cartpole_model_250.pt", env_name = 'CartPole-v0', num_episodes=1000)
-  
-
 

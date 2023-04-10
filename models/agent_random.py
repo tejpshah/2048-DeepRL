@@ -1,6 +1,5 @@
 import torch 
 import numpy as np 
-from train_ppo_base import ActorCritic
 
 class AgentRandom():
     def __init__(self):
@@ -23,18 +22,5 @@ class AgentRandom():
         for all other agents, override this method to include observation.
         '''
         return np.random.choice(self.actions)
-
-class AgentPPO():
-    def __init__(self, obs_space_size=16, act_space_size=4, hidden_layer_size, num_shared_layers, activation_fnction, device, model_path = 'ppo_2048_model.th'):
-        
-        self.device = device
-        model = ActorCritic(obs_space_size,act_space_size, hidden_layer_size, num_shared_layers, activation_function)
-        model = model.to(self.device)
-        model.load_state_dict(torch.load(model_path))
-
-    def choose_action(self, state):
-        logits, _ = model(torch.tensor([state.flatten()], dtype=torch.float32, device=self.device))
-        act = torch.argmax(logits, dim=1).item()
-        return act 
 
 

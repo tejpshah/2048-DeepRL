@@ -1,5 +1,4 @@
 # Note: This file works
-
 import numpy as np 
 from env.board import Board
 
@@ -9,7 +8,7 @@ class EnvironmentWrapper():
 
         # Initialize the board
         self.board = Board()
-        self.observation_space_len = self.board.state.flatten().shape[0]
+        self.observation_space_len = self.board.state.flatten().shape[0] * 18 
         self.action_space_len = 4
 
         # Allows for decay of rewards
@@ -30,7 +29,9 @@ class EnvironmentWrapper():
         # Return the state and flatten it
         # so that it can be passed to the 
         # #network as a vector
-        return self.board.state.flatten()
+        state = np.log2(self.board.state, out=np.zeros_like(self.board.state), where=(self.board.state != 0)).reshape(-1).astype(int)
+        state = np.eye(18)[state].flatten()
+        return state
     
     def step(self, action, r1 = True):
 
@@ -56,15 +57,22 @@ class EnvironmentWrapper():
 
         def reward2():
             return self.board.score - current_score
-        
-        # Get the reward
-        reward = reward2()
 
         # Get the next state
-        next_state = self.board.state.flatten()
+        next_state = np.log2(self.board.state, out=np.zeros_like(self.board.state), where=(self.board.state != 0)).reshape(-1).astype(int)
+        next_state = np.eye(18)[next_state].flatten()
+
+        def reward3():
+            return np.count_nonzero(next_state == 0)
+
+        # Get the reward
+        reward = reward3()
 
         # Get the done flag
         done = self.board.terminal
 
         # Return the next state, reward, and done flag
         return next_state, reward, done, None
+
+if __name__ == "__main__":
+
