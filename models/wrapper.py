@@ -58,15 +58,15 @@ class EnvironmentWrapper():
         def reward2():
             return self.board.score - current_score
 
-        # Get the next state
-        next_state = np.log2(self.board.state, out=np.zeros_like(self.board.state), where=(self.board.state != 0)).reshape(-1).astype(int)
-        next_state = np.eye(18)[next_state].flatten()
-
         def reward3():
-            return np.count_nonzero(next_state == 0)
+            return np.count_nonzero(self.board.state == 0)
 
         # Get the reward
         reward = reward3()
+
+        # Get the next state
+        next_state = np.log2(self.board.state, out=np.zeros_like(self.board.state), where=(self.board.state != 0)).reshape(-1).astype(int)
+        next_state = np.eye(18)[next_state].flatten()
 
         # Get the done flag
         done = self.board.terminal
