@@ -71,7 +71,7 @@ class Simulator():
         self.game_scores[game.score] = self.game_scores.get(game.score, 0) + 1
         '''
     
-    def run_episodes(self, num_episodes=50, num_procs=1):
+    def run_episodes(self, num_episodes=100, num_procs=1):
         start = time.time()
 
         # divide episodes among processes
@@ -101,7 +101,7 @@ class Simulator():
         print(f"Max Scores Dictionary: {self.max_scores}")
         print(f"Episode Steps Dictionary: {self.num_steps}\n")
     
-    def visualize_board_video(self, fn = 'videos/video.mp4'):
+    def visualize_board_video(self, fn = 'videos/videoddqn.mp4'):
         i = 1
         while Path(fn).is_file():
             fn = fn[:-4] + str(i) + '.mp4'
@@ -157,9 +157,9 @@ class Simulator():
 
 if __name__ == "__main__":
     S1 = Simulator()
-    S1.run_episodes_worker(1)
+    S1.run_episodes_worker(100)
     # print(S1.gameplay_tensor)
     S1.visualize_gameplay(S1.gameplay_tensor, S1.game_stats)
     S1.visualize_board_video()
     # S1.get_simulation_info()
-    S1.plt_sim()
+    # S1.plt_sim()

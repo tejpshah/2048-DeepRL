@@ -71,59 +71,9 @@ class Plotter():
         self.num_steps = num_steps
         self.num_episodes = sum(num_steps.values())
         self.agent_name = get_name(agent)
-        self.my_path = self.my_path = os.path.dirname(os.path.dirname(__file__))
-    
-    def plt_max_score(self, plt_type:str) -> None:
-        """
-        Create a plot of the max scores and save it to a file.
-        
-        Parameters
-        ----------
-        plt_type: str
-            The parameters of choice are 'histo', 'bar'.
-        """
-        plt.clf()
-        plt.title(f'Agent {self.agent_name} Max Game scores over {self.num_episodes} episodes')
-        plt.xlabel("Max scores") 
-        plt.ylabel("Frequency")
+        self.my_path = os.path.dirname(os.path.dirname(__file__))
 
-        if plt_type == "histo":
-            max_scores = [key for key, val in self.max_scores.items() for _ in range(val)]
-            plt.hist(max_scores, bins=bins_calc(lst=max_scores, use="max"), 
-                    color="green")
-        elif plt_type == "bar":
-            plt.bar(list(self.max_scores.keys()), self.max_scores.values(),
-                     color="green")
-            
-        time = ''.join(c for c in str(datetime.now()) if c not in '.:')
-        outfile = self.my_path + f'/data/plots/{self.agent_name} MaxScore ' + time + '.jpg'
-        plt.savefig(outfile)
-
-    def plt_game_score(self, plt_type:str) -> None:
-        """
-        Create a plot of the game scores and save it to a file.
-        
-        Parameters
-        ----------
-        plt_type: str
-            The parameters of choice are 'histo', 'bar'.
-        """
-        plt.clf()
-        plt.title(f'Agent {self.agent_name} Overall Game scores over {self.num_episodes} episodes')
-        plt.xlabel("Game scores") 
-        plt.ylabel("Frequency")
-
-        if plt_type == "histo":
-            game_scores = [key for key, val in self.game_scores.items() for _ in range(val)]
-            plt.hist(game_scores, bins=bins_calc(game_scores, use="game"), 
-                    color="green")
-        elif plt_type == "bar":
-            plt.bar(list(self.game_scores.keys()), self.game_scores.values(), 
-                    color="green")
-        
-        time = ''.join(c for c in str(datetime.now()) if c not in '.:')
-        outfile = self.my_path + f'/data/plots/{self.agent_name} GameScore' + time + '.jpg'
-        plt.savefig(outfile)
+        self.json_path = os.path.join(os.path.dirname(__file__), 'data.json')
 
     def save_json_info(self):
         """
@@ -138,6 +88,94 @@ class Plotter():
             "# of steps" : dict(sorted(self.num_steps.items()))
         }
         JSON_NAME = self.my_path + f'/data/json/{self.agent_name} plot_info' + time + '.json'
-        with open(self.my_path + f'/data/json/{self.agent_name} plot_info' + time + '.json', "w") as f:
+        with open(JSON_NAME, "w") as f:
             json.dump(JSON_val, f, indent=4)
+
+        with open(JSON_NAME) as f:
+            data = json.load(f)
+
+        time = ''.join(c for c in str(datetime.now()) if c not in '.:')
+
+        # Plot histogram of # of steps
+        steps_data = data['# of steps']
+        plt.hist(list(map(int, steps_data.keys())), bins=20)
+        plt.title('Histogram of # of Steps')
+        plt.xlabel('# of Steps')
+        plt.ylabel('Frequency')
+        outfile = self.my_path + f'/data/plots/{self.agent_name} NumSteps' + time + '.jpg'
+        plt.savefig(outfile)
+        plt.show()
+        # Plot histogram of game scores
+        scores_data = data['Game Scores']
+        plt.hist(list(map(float, scores_data.keys())), bins=20)
+        plt.title('Histogram of Game Scores')
+        plt.xlabel('Game Score')
+        plt.ylabel('Frequency')
+        outfile = self.my_path + f'/data/plots/{self.agent_name} GameScore' + time + '.jpg'
+        plt.savefig(outfile)
+        plt.show()
+        # Plot barchart of max scores
+        max_scores_data = data['Max Scores']
+        x_labels = [str(2**x) for x in range(12)]
+        y_values = [max_scores_data.get(str(float(x)), 0) for x in x_labels]
+        plt.bar(x_labels, y_values)
+        plt.title('Max Scores')
+        plt.xlabel('Tile Value')
+        plt.ylabel('Frequency')
+        outfile = self.my_path + f'/data/plots/{self.agent_name} MaxScore ' + time + '.jpg'
+        plt.savefig(outfile)
+        plt.show()
+
+    
+    # def plt_max_score(self, plt_type:str) -> None:
+    #     """
+    #     Create a plot of the max scores and save it to a file.
+        
+    #     Parameters
+    #     ----------
+    #     plt_type: str
+    #         The parameters of choice are 'histo', 'bar'.
+    #     """
+    #     plt.clf()
+    #     plt.title(f'Agent {self.agent_name} Max Game scores over {self.num_episodes} episodes')
+    #     plt.xlabel("Max scores") 
+    #     plt.ylabel("Frequency")
+
+    #     if plt_type == "histo":
+    #         max_scores = [key for key, val in self.max_scores.items() for _ in range(val)]
+    #         plt.hist(max_scores, bins=bins_calc(lst=max_scores, use="max"), 
+    #                 color="green")
+    #     elif plt_type == "bar":
+    #         plt.bar(list(self.max_scores.keys()), self.max_scores.values(),
+    #                  color="green")
+            
+    #     time = ''.join(c for c in str(datetime.now()) if c not in '.:')
+    #     outfile = self.my_path + f'/data/plots/{self.agent_name} MaxScore ' + time + '.jpg'
+    #     plt.savefig(outfile)
+
+    # def plt_game_score(self, plt_type:str) -> None:
+    #     """
+    #     Create a plot of the game scores and save it to a file.
+        
+    #     Parameters
+    #     ----------
+    #     plt_type: str
+    #         The parameters of choice are 'histo', 'bar'.
+    #     """
+    #     plt.clf()
+    #     plt.title(f'Agent {self.agent_name} Overall Game scores over {self.num_episodes} episodes')
+    #     plt.xlabel("Game scores") 
+    #     plt.ylabel("Frequency")
+
+    #     if plt_type == "histo":
+    #         game_scores = [key for key, val in self.game_scores.items() for _ in range(val)]
+    #         plt.hist(game_scores, bins=bins_calc(game_scores, use="game"), 
+    #                 color="green")
+    #     elif plt_type == "bar":
+    #         plt.bar(list(self.game_scores.keys()), self.game_scores.values(), 
+    #                 color="green")
+        
+    #     time = ''.join(c for c in str(datetime.now()) if c not in '.:')
+    #     outfile = self.my_path + f'/data/plots/{self.agent_name} GameScore' + time + '.jpg'
+    #     plt.savefig(outfile)
     

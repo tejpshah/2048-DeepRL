@@ -1,19 +1,17 @@
-import numpy as np
-import random
-import matplotlib
-import matplotlib.pyplot as plt
-from collections import namedtuple, deque, OrderedDict
-from itertools import count
-
-import torch
-from torch import nn 
-import torch.optim as optim
-from torch.nn import functional as F
-
 import copy
 import os
-import pickle
+import random
 import shutil
+from collections import deque, namedtuple
+from itertools import count
+
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+import torch.optim as optim
+from torch import nn
+from torch.nn import functional as F
 
 DEVICE  = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -189,7 +187,7 @@ if __name__ == "__main__":
   plt.ion()
   
   SAVE_PATH = os.path.join(os.path.dirname(__file__) + '\data\Checkpoints',
-                            'Test4_5.pt')
+                            'Test4_5_active.pt')
   TRANSITION = namedtuple('Transition',
                            ('state', 'action', 'reward', 'next_state'))
 
@@ -197,14 +195,14 @@ if __name__ == "__main__":
 
   # Hyperparameters
   CAPACITY = 50000
-  BATCH_SIZE = 128
+  BATCH_SIZE = 256
   CLIPPING = 1000
-  EPS_START = 0.9
+  EPS_START = 0.09
   EPS_END = 0.01
-  EPS_DECAY = 20000
+  EPS_DECAY = 10000
   GAMMA = 0.99
   TAU = 0.001
-  LR = 1e-5
+  LR = 1e-6
 
   # Get the number of actions and the number of observations
   n_actions = env.action_space_len
@@ -307,7 +305,7 @@ if __name__ == "__main__":
 
 
   """Training loop"""
-  num_episodes = 1
+  num_episodes = 10000
 
   for i_episode in range(num_episodes):
     state = env.reset()

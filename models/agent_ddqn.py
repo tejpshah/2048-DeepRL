@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from . import ddqn_base 
 
-SAVE_PATH = os.path.dirname(os.path.abspath(__file__)) + '\data\Checkpoints\Test4_5.pt'
+SAVE_PATH = os.path.dirname(os.path.abspath(__file__)) + '\data\Checkpoints\Test4_5_active.pt'
 
 class AgentDoubleDQN():
     def __init__(self):

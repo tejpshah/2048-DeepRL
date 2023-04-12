@@ -60,7 +60,7 @@ class Simulator():
         self.max_scores[game.get_max()] = self.max_scores.get(game.get_max(), 0) + 1
         self.game_scores[game.score] = self.game_scores.get(game.score, 0) + 1
     
-    def run_episodes(self, num_episodes=1000, num_procs=1):
+    def run_episodes(self, num_episodes=100, num_procs=1):
         start = time.time()
 
         # divide episodes among processes
@@ -81,7 +81,7 @@ class Simulator():
     def run_episodes_worker(self, num_episodes):
         print(f"Starting {num_episodes} episodes...")
         for i in range(num_episodes):
-            if i % 100 == 0:
+            if i % 10 == 0:
                 print(f"Episode: {i}")
             self.run_episode()
 
@@ -130,8 +130,6 @@ class Simulator():
     def plt_sim(self, plt_type="histo"):
         p = Plotter(game_scores=self.game_scores, max_scores=self.max_scores,
                     num_steps=self.num_steps, agent=self.agent)
-        p.plt_max_score(plt_type=plt_type)
-        p.plt_game_score(plt_type=plt_type)
         p.save_json_info()
 
 

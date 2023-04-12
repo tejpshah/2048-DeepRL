@@ -1,8 +1,10 @@
-import numpy as np 
-import tkinter as tk
 import os
-import pandas as pd
+import tkinter as tk
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
 
 class Board():
 
@@ -85,7 +87,7 @@ class Board():
         returns 1 if terminal state, 0 otherwise. 
         '''
         if 2048 in self.state:
-            return 1
+            return 0
         if len(self.get_spawn_tile_locations()) > 0:
             return 0
         # Check if any combinations can be made if the board is full
