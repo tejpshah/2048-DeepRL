@@ -14,6 +14,7 @@ from torch import nn
 from torch.nn import functional as F
 
 DEVICE  = "cuda" if torch.cuda.is_available() else "cpu"
+print(f'Using {DEVICE} device')
 
 class replay_buffer():
   def __init__(self, capacity, longterm = 0.1):
@@ -179,14 +180,14 @@ class EnvironmentWrapper():
       empty_spots = np.count_nonzero(next_state == 0)
       reward = empty_spots
       return reward
-
+    
 if __name__ == "__main__":
   from env.board import Board
   is_ipython = 'inline' in matplotlib.get_backend()
   if is_ipython: from IPython import display
   plt.ion()
   
-  SAVE_PATH = os.path.join(os.path.dirname(__file__) + '\data\Checkpoints',
+  SAVE_PATH = os.path.join(os.path.dirname(__file__), 'data', 'Checkpoints',
                             'Test4_5_active.pt')
   TRANSITION = namedtuple('Transition',
                            ('state', 'action', 'reward', 'next_state'))
@@ -195,14 +196,14 @@ if __name__ == "__main__":
 
   # Hyperparameters
   CAPACITY = 50000
-  BATCH_SIZE = 256
+  BATCH_SIZE = 128
   CLIPPING = 1000
-  EPS_START = 0.09
+  EPS_START = 0.02
   EPS_END = 0.01
   EPS_DECAY = 10000
   GAMMA = 0.99
   TAU = 0.001
-  LR = 1e-6
+  LR = 1e-5
 
   # Get the number of actions and the number of observations
   n_actions = env.action_space_len
@@ -231,11 +232,22 @@ if __name__ == "__main__":
 
   steps_done = 0
 
+  prev_state = None
+  no_change_count = 0
   def select_action(state):
     global steps_done
     steps_done += 1
     eps_threshold = EPS_END + (EPS_START - EPS_END) * np.exp(-1. * steps_done / EPS_DECAY)
-    if np.random.uniform() > eps_threshold:
+
+    global prev_state
+    global no_change_count
+    if prev_state is not None and (prev_state == state).all():
+      no_change_count += 1
+    else:
+      prev_state = state.clone().detach()
+      no_change_count = 0
+
+    if np.random.uniform() > eps_threshold and no_change_count < 5:
       with torch.no_grad():
         return Q_online(state).max(1)[1].view(1, 1)
     else:
@@ -245,7 +257,7 @@ if __name__ == "__main__":
 
   def plot_scores(show_results=False):
     plt.figure(1)
-    scores_t = torch.tensor(episode_scores, dtype=torch.float)
+    scores_t = torch.tensor(episode_scores, dtype=torch.float32)
     if show_results:
       plt.title('Results')
     else:
@@ -309,15 +321,15 @@ if __name__ == "__main__":
 
   for i_episode in range(num_episodes):
     state = env.reset()
-    state = torch.tensor(state, device=DEVICE, dtype=torch.float).unsqueeze(0)
+    state = torch.tensor(state, device=DEVICE, dtype=torch.float32).unsqueeze(0)
     for t in count():
       action = select_action(state)
 
       next_state, reward, done = env.step(action.item())
 
-      reward = torch.tensor([reward], device=DEVICE, dtype=torch.float)
+      reward = torch.tensor([reward], device=DEVICE, dtype=torch.float32)
       if not done:
-        next_state = torch.tensor(next_state, device=DEVICE, dtype=torch.float).unsqueeze(0)
+        next_state = torch.tensor(next_state, device=DEVICE, dtype=torch.float32).unsqueeze(0)
       else:
         next_state = None
 
