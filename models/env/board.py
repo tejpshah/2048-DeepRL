@@ -83,11 +83,9 @@ class Board():
 
     def is_terminal_state(self):
         '''
-        episode is over is board is full or 2048 is achieved. 
+        episode is over is board is full.
         returns 1 if terminal state, 0 otherwise. 
         '''
-        if 2048 in self.state:
-            return 0
         if len(self.get_spawn_tile_locations()) > 0:
             return 0
         # Check if any combinations can be made if the board is full

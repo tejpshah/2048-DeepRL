@@ -10,7 +10,7 @@ import os
 import torch
 from pathlib import Path
 
-class Simulator():
+class Evaluation():
 
     VISUAL_X_COORD = 0
 
@@ -92,8 +92,10 @@ class Simulator():
         print(f"It took {end-start:.3f} seconds to run {num_episodes} simulations.")
 
     def run_episodes_worker(self, num_episodes):
-        for _ in range(num_episodes):
+        for i in range(num_episodes):
             self.run_episode()
+            if i % 10 == 0:
+                print(f"Episode {i} complete.")
 
     def get_simulation_info(self):
         print('\nTHIS WAS THE SIMULATION INFO:')
@@ -132,7 +134,9 @@ class Simulator():
             for j in range(4):
                 data = float(stateTensor[i, j])
                 max_number = max(data, max_number)
-                color = Board.CELL_BACKGROUND_COLOR_DICT[data]
+                color = Board.CELL_BACKGROUND_COLOR_DICT['beyond']
+                if data <= 2048:
+                    color = Board.CELL_BACKGROUND_COLOR_DICT[data]
                 table[(i, j)].set_facecolor(color)
         ax.text(self.VISUAL_X_COORD, .8, 'Current Score: ' + str(float(score)), transform = ax.transAxes, color = 'black')
         ax.text(self.VISUAL_X_COORD, .7, 'Max Number: ' + str(max_number), transform = ax.transAxes, color = 'black')
@@ -156,8 +160,8 @@ class Simulator():
 
 
 if __name__ == "__main__":
-    S1 = Simulator()
-    S1.run_episodes_worker(100)
+    S1 = Evaluation()
+    S1.run_episodes_worker(1000)
     # print(S1.gameplay_tensor)
     S1.visualize_gameplay(S1.gameplay_tensor, S1.game_stats)
     S1.visualize_board_video()

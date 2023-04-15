@@ -254,7 +254,6 @@ if __name__ == "__main__":
       return torch.tensor([[np.random.choice(n_actions)]], device=DEVICE, dtype=torch.long)
 
   episode_scores = []
-
   def plot_scores(show_results=False):
     plt.figure(1)
     scores_t = torch.tensor(episode_scores, dtype=torch.float32)
@@ -317,7 +316,7 @@ if __name__ == "__main__":
 
 
   """Training loop"""
-  num_episodes = 10000
+  num_episodes = 20000
 
   for i_episode in range(num_episodes):
     state = env.reset()

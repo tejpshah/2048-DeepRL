@@ -73,13 +73,13 @@ class Plotter():
         self.agent_name = get_name(agent)
         self.my_path = os.path.dirname(os.path.dirname(__file__))
 
-        self.json_path = os.path.join(os.path.dirname(__file__), 'data.json')
-
     def save_json_info(self):
         """
         Save information about the maximum and game scores, and the number of steps to a JSON file.
         """
         time = ''.join(c for c in str(datetime.now()) if c not in '.:')
+        JSON_name = self.agent_name + ' plot_info' + time + '.json'
+        JSON_path = os.path.join(self.my_path, 'data', 'JSON', JSON_name)
         JSON_val = {
             "Agent Name" : f'{self.agent_name}',
             "# Episodes" : f'{self.num_episodes}',
@@ -87,14 +87,12 @@ class Plotter():
             "Game Scores": dict(sorted(self.game_scores.items())),
             "# of steps" : dict(sorted(self.num_steps.items()))
         }
-        JSON_NAME = self.my_path + f'/data/json/{self.agent_name} plot_info' + time + '.json'
-        with open(JSON_NAME, "w") as f:
+
+        with open(JSON_path, "w") as f:
             json.dump(JSON_val, f, indent=4)
 
-        with open(JSON_NAME) as f:
+        with open(JSON_path) as f:
             data = json.load(f)
-
-        time = ''.join(c for c in str(datetime.now()) if c not in '.:')
 
         # Plot histogram of # of steps
         steps_data = data['# of steps']
@@ -102,7 +100,7 @@ class Plotter():
         plt.title('Histogram of # of Steps')
         plt.xlabel('# of Steps')
         plt.ylabel('Frequency')
-        outfile = self.my_path + f'/data/plots/{self.agent_name} NumSteps' + time + '.jpg'
+        outfile = os.path.join(self.my_path, 'data', 'plots', f'{self.agent_name} NumSteps' + time + '.jpg')
         plt.savefig(outfile)
         plt.show()
         # Plot histogram of game scores
@@ -111,7 +109,7 @@ class Plotter():
         plt.title('Histogram of Game Scores')
         plt.xlabel('Game Score')
         plt.ylabel('Frequency')
-        outfile = self.my_path + f'/data/plots/{self.agent_name} GameScore' + time + '.jpg'
+        outfile = os.path.join(self.my_path, 'data', 'plots', f'{self.agent_name} GameScore' + time + '.jpg')
         plt.savefig(outfile)
         plt.show()
         # Plot barchart of max scores
@@ -122,7 +120,7 @@ class Plotter():
         plt.title('Max Scores')
         plt.xlabel('Tile Value')
         plt.ylabel('Frequency')
-        outfile = self.my_path + f'/data/plots/{self.agent_name} MaxScore ' + time + '.jpg'
+        outfile = os.path.join(self.my_path, 'data', 'plots', f'{self.agent_name} MaxScore' + time + '.jpg')
         plt.savefig(outfile)
         plt.show()
 
