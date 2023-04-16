@@ -137,9 +137,9 @@ if __name__ == "__main__":
                          num_shared_layers=NUM_SHARED_LAYERS,
                          activation_function=ACTIVATION,
                          device = DEVICE,
-                         model_path = 'models/ppo-trainedmodel.pt')
+                         model_path = 'submissions/final-model-2048/ppo-trainedmodel.pt')
 
-    # S1 = Simulator(ppo_agent)  
+    #S1 = Simulator(ppo_agent)  
     S1 = Simulator() 
     S1.run_episodes(num_episodes=1000)
     S1.get_simulation_info()

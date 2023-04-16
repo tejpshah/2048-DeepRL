@@ -168,12 +168,10 @@ if __name__ == "__main__":
                          num_shared_layers=NUM_SHARED_LAYERS,
                          activation_function=ACTIVATION,
                          device = DEVICE,
-                         model_path = 'models/ppo-trainedmodel.pt')
+                         model_path = 'submission/ppo/final-model-2048/ppo-trainedmodel.pt')
 
     S1 = Simulator(ppo_agent)
-    S1.run_episodes_worker(1)
-    # print(S1.gameplay_tensor)
+    S1.run_episodes_worker(1000)
     S1.visualize_gameplay(S1.gameplay_tensor, S1.game_stats)
     S1.visualize_board_video()
-    # S1.get_simulation_info()
-    # S1.plt_sim()
+
