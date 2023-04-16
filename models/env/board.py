@@ -89,7 +89,6 @@ class Board():
         '''
         if len(self.get_spawn_tile_locations()) > 0:
             return 0
-        else: return 1
         # Check if any combinations can be made if the board is full
         for i in range(3):
             for j in range(3):

@@ -15,16 +15,16 @@ import json
 import matplotlib.pyplot as plt
 
 # Hyperparameters for model
-SHARED_HIDDEN_LAYER_SIZE= 128
-NUM_SHARED_LAYERS = 2
+SHARED_HIDDEN_LAYER_SIZE= 64
+NUM_SHARED_LAYERS = 1
 ACTIVATION = nn.ReLU()
 PPO_CLIP_VAL = 0.20
 PPO_POLICY_LR = 3e-4
 PPO_VALUE_LR = 3e-3
-PPO_EPOCHS = 20
+PPO_EPOCHS = 40
 VAL_EPOCHS = 20
 KL_TARGET = 0.02
-N_EPISODES = 250
+N_EPISODES = 1000
 PRINT_FREQ = 1
 NUM_ROLLOUTS = 4
 SAVE_FREQ = 50 
@@ -235,11 +235,16 @@ class PPO_Buffer():
 
 ### HELPER FUNCTIONS ###
 
-def train_ppo(env, model, ppo_trainer, ppo_buffer, n_episodes=N_EPISODES, num_rollouts=NUM_ROLLOUTS, print_freq=PRINT_FREQ, save_freq=SAVE_FREQ, save_model=True, model_path="cartpole_model", stats_path="cartpole_stats.json"):
+def train_ppo(env, model, ppo_trainer, ppo_buffer, n_episodes=N_EPISODES, num_rollouts=NUM_ROLLOUTS, print_freq=PRINT_FREQ, save_freq=SAVE_FREQ, save_model=True, model_path="cartpole_model", stats_path="cartpole_stats.json", load_from_checkpoint=False):
 
     num_steps = 0
     ep_rewards = []
     stats = {"avg_reward": [], "num_steps": []}
+
+    if load_from_checkpoint:
+        num_steps = 84284936
+        with open('ppo_2048_stats_rewardfinal13.json') as f:
+            stats = json.load(f)
 
     for step in range(n_episodes):
 
@@ -381,7 +386,7 @@ if __name__ == "__main__":
   ###  TRAINS MODEL USING PROXIMAL POLICY OPTIMIZATION FOR CARTPOLE ###
 
   # set up environment
-  env = gym.make('CartPole-v0')
+  env = gym.make('CartPole-v1')
 
   # set up model
   model = ActorCritic(env.observation_space.shape[0], 
@@ -406,13 +411,13 @@ if __name__ == "__main__":
   ppobuffer = PPO_Buffer() 
 
   # train the model with PPO
-  train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer)
+  # train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer, save_freq=200)
 
   ###  PLOTS TRAINING AND EVALUATES TRAINED MODEL FOR PROXIMAL POLICY OPTIMIZATION ###
 
   # plot the training cartpole stats
-  plot_training_stats('cartpole_stats.json')
+  # plot_training_stats('cartpole_stats.json')
 
   # evaluate the model
-  evaluate_trained_model(model_path="cartpole_model_250.pt", env_name = 'CartPole-v0', num_episodes=1000)
+  evaluate_trained_model(model_path="cartpole_model_1000.pt", env_name = 'CartPole-v1', num_episodes=1000)
 

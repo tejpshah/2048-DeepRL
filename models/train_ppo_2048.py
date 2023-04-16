@@ -39,17 +39,17 @@ if __name__ == "__main__":
     # Hyperparameters for model
     SHARED_HIDDEN_LAYER_SIZE= 256
     NUM_SHARED_LAYERS = 1
-    ACTIVATION = nn.ReLU()
-    PPO_CLIP_VAL = 0.10
+    ACTIVATION = nn.Tanh()
+    PPO_CLIP_VAL = 0.20
     PPO_POLICY_LR = 1e-5
-    PPO_VALUE_LR = 1e-5
-    PPO_EPOCHS = 40
-    VAL_EPOCHS = 40
-    KL_TARGET = 0.0125
-    N_EPISODES = 15000
+    PPO_VALUE_LR = 1e-4
+    PPO_EPOCHS = 60
+    VAL_EPOCHS = 60
+    KL_TARGET = 0.02
+    N_EPISODES = 20000
     PRINT_FREQ = 1
-    NUM_ROLLOUTS = 4
-    SAVE_FREQ = 100
+    NUM_ROLLOUTS = 16
+    SAVE_FREQ = 50
 
     ###  TRAINS MODEL USING PROXIMAL POLICY OPTIMIZATION FOR 2048 ###
 
@@ -57,12 +57,24 @@ if __name__ == "__main__":
     env = EnvironmentWrapper() 
 
     # set up model
+    '''
     model = ActorCritic(env.observation_space_len, 
                         env.action_space_len, 
                         hidden_layer_size=SHARED_HIDDEN_LAYER_SIZE, 
                         num_shared_layers=NUM_SHARED_LAYERS, 
                         activation_function=ACTIVATION)
+    '''
+
+    model = ActorCritic(
+        obs_size=env.observation_space_len,
+        act_size=env.action_space_len,
+        hidden_layer_size=SHARED_HIDDEN_LAYER_SIZE,
+        num_shared_layers=NUM_SHARED_LAYERS,
+        activation_function=ACTIVATION,
+    )
+
     model = model.to(DEVICE)  
+    model.load_state_dict(torch.load('ppo_2048_model_rewardfinal14_11200.pt', map_location = DEVICE))
 
     # set up PPO trainer
     ppo = PPO_Trainer(
@@ -77,12 +89,11 @@ if __name__ == "__main__":
 
     # set up buffer
     ppobuffer = PPO_Buffer() 
-
+    
     # train the model with PPO
-    train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer,n_episodes=N_EPISODES, num_rollouts=NUM_ROLLOUTS, print_freq=PRINT_FREQ, save_freq=SAVE_FREQ, save_model=True, model_path="ppo_2048_model_reward3", stats_path ="ppo_2048_stats_reward3.json")
+    train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer,n_episodes=N_EPISODES, num_rollouts=NUM_ROLLOUTS, print_freq=PRINT_FREQ, save_freq=SAVE_FREQ, save_model=True, model_path="ppo_2048_model_rewardfinal15", stats_path ="ppo_2048_stats_rewardfinal15.json", load_from_checkpoint=True)
     
     ###  PLOTS TRAINING AND EVALUATES TRAINED MODEL FOR PROXIMAL POLICY OPTIMIZATION ###
     
-    # plot the training cartpole stats
-    plot_2048_training('ppo_2048_stats_reward3.json')
+
 
