@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import json
 
 # internal modules 
-from wrapper import EnvironmentWrapper
+from ppo_wrapper import EnvironmentWrapper
 from train_ppo_base import * 
 
 def plot_2048_training(stats_file='ppo_2048_stats.json', w_size=20, dpi=300):
