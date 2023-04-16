@@ -1,5 +1,3 @@
-# Note: This file works
-
 # standard imports 
 import gym 
 import numpy as np 
@@ -15,16 +13,16 @@ import json
 import matplotlib.pyplot as plt
 
 # Hyperparameters for model
-SHARED_HIDDEN_LAYER_SIZE= 128
-NUM_SHARED_LAYERS = 2
+SHARED_HIDDEN_LAYER_SIZE= 64
+NUM_SHARED_LAYERS = 1
 ACTIVATION = nn.ReLU()
 PPO_CLIP_VAL = 0.20
 PPO_POLICY_LR = 3e-4
 PPO_VALUE_LR = 3e-3
-PPO_EPOCHS = 20
+PPO_EPOCHS = 40
 VAL_EPOCHS = 20
 KL_TARGET = 0.02
-N_EPISODES = 250
+N_EPISODES = 1000
 PRINT_FREQ = 1
 NUM_ROLLOUTS = 4
 SAVE_FREQ = 50 
@@ -235,12 +233,42 @@ class PPO_Buffer():
 
 ### HELPER FUNCTIONS ###
 
-def train_ppo(env, model, ppo_trainer, ppo_buffer, n_episodes=N_EPISODES, num_rollouts=NUM_ROLLOUTS, print_freq=PRINT_FREQ, save_freq=SAVE_FREQ, save_model=True, model_path="cartpole_model", stats_path="cartpole_stats.json"):
+def train_ppo(env, model, ppo_trainer, ppo_buffer, n_episodes=N_EPISODES, num_rollouts=NUM_ROLLOUTS,
+              print_freq=PRINT_FREQ, save_freq=SAVE_FREQ, save_model=True, model_path="cartpole_model",
+              stats_path="cartpole_stats.json", load_from_checkpoint=False):
+    """
+    Trains a PPO model on a given environment using the provided trainer and buffer.
 
+    Args:
+    - env (gym.Env): the environment to train the model on
+    - model (nn.Module): the PPO model to be trained
+    - ppo_trainer (PPOTrainer): the PPO trainer used for training
+    - ppo_buffer (PPOBuffer): the PPO buffer used for collecting training data
+    - n_episodes (int): the number of episodes to run for (default: N_EPISODES)
+    - num_rollouts (int): the number of rollouts to generate per episode (default: NUM_ROLLOUTS)
+    - print_freq (int): how often to print episode statistics (default: PRINT_FREQ)
+    - save_freq (int): how often to save the model (default: SAVE_FREQ)
+    - save_model (bool): whether to save the model or not (default: True)
+    - model_path (str): the path to save the model to (default: "cartpole_model")
+    - stats_path (str): the path to save the episode statistics to (default: "cartpole_stats.json")
+    - load_from_checkpoint (bool): whether to load from a checkpoint (default: False)
+
+    Returns:
+    - None
+    """
+
+    # Initialize variables
     num_steps = 0
     ep_rewards = []
     stats = {"avg_reward": [], "num_steps": []}
 
+    # Load from checkpoint if flag is set
+    if load_from_checkpoint:
+        num_steps = 84284936
+        with open('ppo_2048_stats_rewardfinal13.json') as f:
+            stats = json.load(f)
+
+    # Run the training loop
     for step in range(n_episodes):
 
         # Generate rollouts and collect training data
@@ -254,8 +282,10 @@ def train_ppo(env, model, ppo_trainer, ppo_buffer, n_episodes=N_EPISODES, num_ro
         ppo_trainer.train_policy(states, actions, log_probs, gaes)
         ppo_trainer.train_value(states, rewards)
 
+        # Update number of steps taken
         num_steps += len(train_data[0])
 
+        # Print statistics every `print_freq` episodes
         if (step + 1) % print_freq == 0:
             avg_reward = np.mean(ep_rewards[-print_freq:])
             stats["avg_reward"].append(avg_reward)
@@ -273,15 +303,26 @@ def train_ppo(env, model, ppo_trainer, ppo_buffer, n_episodes=N_EPISODES, num_ro
 
 def plot_training_stats(stats_file='cartpole_stats.json', w_size=20, dpi=300):
     """
-    Generate a line plot of the average reward over the number of steps taken during training.
+    Generates a line plot of the average reward over the number of steps taken during training.
+
+    Args:
+    - stats_file (str): the path to the JSON file containing the training statistics (default: 'cartpole_stats.json')
+    - w_size (int): the window size for smoothing the data (default: 20)
+    - dpi (int): the resolution of the saved image (default: 300)
+
+    Returns:
+    - None
     """
+    # Load the statistics from the JSON file
     with open(stats_file, "r") as f:
         stats = json.load(f)
 
+    # Smooth the data with a rolling average
     window_size = w_size 
     rolling_avg_reward = np.convolve(stats["avg_reward"], np.ones(window_size)/window_size, mode='valid')
     rolling_num_steps = stats["num_steps"][window_size-1:]
 
+    # Generate the plot
     plt.plot(rolling_num_steps, rolling_avg_reward)
     plt.xlabel("NumSteps")
     plt.ylabel("Avg Reward")
@@ -292,6 +333,14 @@ def plot_training_stats(stats_file='cartpole_stats.json', w_size=20, dpi=300):
 def evaluate_trained_model(model_path, env_name, num_episodes=1000):
     """
     Evaluates a trained PPO model on the specified environment using the saved model weights.
+
+    Args:
+    - model_path (str): the path to the saved model weights
+    - env_name (str): the name of the environment to evaluate the model on
+    - num_episodes (int): the number of episodes to run for (default: 1000)
+
+    Returns:
+    - avg_reward (float): the average reward received over the evaluation episodes
     """
 
     # Set up the environment
@@ -326,12 +375,98 @@ def evaluate_trained_model(model_path, env_name, num_episodes=1000):
 
     return avg_reward
 
+def plot_2048_training(stats_file='ppo_2048_stats.json', w_size=20, dpi=300):
+    """
+    Generate a line plot of the average reward over the number of steps taken during training.
+    """
+    with open(stats_file, "r") as f:
+        stats = json.load(f)
+
+    window_size = w_size 
+    rolling_avg_reward = np.convolve(stats["avg_reward"], np.ones(window_size)/window_size, mode='valid')
+    rolling_num_steps = stats["num_steps"][window_size-1:]
+
+    plt.plot(rolling_num_steps, rolling_avg_reward)
+    plt.xlabel("NumSteps")
+    plt.ylabel("Avg Reward")
+    plt.title("PPO 2048 Training")
+    plt.savefig("ppo_2048_training_smooth.png", dpi=dpi)
+    plt.show()
+
+# this initializes the agent to use the game
+class AgentPPO():
+    """
+    A PPO agent that selects actions based on a trained neural network.
+
+    Attributes:
+    - device (str): the device to run the model on (e.g. 'cpu' or 'cuda')
+    - actions (np.ndarray): an array of the possible actions that can be taken
+    - model (ActorCritic): the PPO model used to select actions
+    - prev_state (np.ndarray): the previous state that was observed
+    - count (int): the number of times the same state has been observed consecutively
+
+    Methods:
+    - choose_action(state) -> int: chooses an action to take based on the current state
+    """
+    def __init__(self, obs_space_size, act_space_size, hidden_layer_size, num_shared_layers, activation_function, device, model_path='ppo_2048_model.th'):
+        """
+        Initializes the AgentPPO instance with the specified parameters.
+
+        Args:
+        - obs_space_size (int): the size of the observation space
+        - act_space_size (int): the size of the action space
+        - hidden_layer_size (int): the size of the hidden layers in the model
+        - num_shared_layers (int): the number of shared layers in the model
+        - activation_function (function): the activation function used in the model
+        - device (str): the device to run the model on (e.g. 'cpu' or 'cuda')
+        - model_path (str): the path to the saved model weights (default: 'ppo_2048_model.th')
+        """
+        self.device = device
+        self.actions = np.array([0, 1, 2, 3])
+
+        # Create and load the PPO model
+        self.model = ActorCritic(obs_space_size, act_space_size, hidden_layer_size, num_shared_layers, activation_function)
+        self.model = self.model.to(self.device)
+        self.model.load_state_dict(torch.load(model_path, map_location=self.device))
+
+        self.prev_state = None
+        self.count = 0
+
+    def choose_action(self, state):
+        """
+        Chooses an action to take based on the current state.
+
+        Args:
+        - state (np.ndarray): the current state
+
+        Returns:
+        - act (int): the action to take
+        """
+        # If the same state has been observed more than 5 times, choose a random action
+        if self.prev_state is not None and (self.prev_state == state).all():
+            self.count += 1
+        else:
+            self.prev_state = state.copy()
+            self.count = 0
+        
+        if self.count > 5:
+            return np.random.choice(self.actions)
+        else:
+            # Preprocess the state and pass it through the model to get the logits
+            state = np.log2(state, out=np.zeros_like(state), where=(state != 0)).reshape(-1).astype(int)
+            state = np.eye(18)[state]
+            state = torch.tensor(state.flatten(), dtype=torch.float32).unsqueeze(0)
+
+            logits, _ = self.model(torch.tensor(state.flatten(), dtype=torch.float32, device=self.device))
+            act = torch.argmax(logits).item()
+            return act
+
 if __name__ == "__main__":
   
   ###  TRAINS MODEL USING PROXIMAL POLICY OPTIMIZATION FOR CARTPOLE ###
 
   # set up environment
-  env = gym.make('CartPole-v0')
+  env = gym.make('CartPole-v1')
 
   # set up model
   model = ActorCritic(env.observation_space.shape[0], 
@@ -356,7 +491,7 @@ if __name__ == "__main__":
   ppobuffer = PPO_Buffer() 
 
   # train the model with PPO
-  train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer)
+  train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer, save_freq=200)
 
   ###  PLOTS TRAINING AND EVALUATES TRAINED MODEL FOR PROXIMAL POLICY OPTIMIZATION ###
 
@@ -364,7 +499,5 @@ if __name__ == "__main__":
   plot_training_stats('cartpole_stats.json')
 
   # evaluate the model
-  evaluate_trained_model(model_path="cartpole_model_250.pt", env_name = 'CartPole-v0', num_episodes=1000)
-  
-
+  evaluate_trained_model(model_path="cartpole_model_1000.pt", env_name = 'CartPole-v1', num_episodes=1000)
 

@@ -1,12 +1,14 @@
 import time 
 import multiprocessing as mp
 from models.env.board import Board
-from models.agents import AgentRandom
+from models.agent_random import AgentRandom
+from models.train_ppo_base import AgentPPO
 from models.utils.plotting import Plotter
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
 import torch
+import torch.nn as nn 
 
 class Simulator():
 
@@ -24,9 +26,6 @@ class Simulator():
 
         # stores a tensor of the game states
         self.gameplay_tensor = None
-
-        # a tensor with the score at the time and the last move
-        # self.game_movements = torch.zeroes([1, 2])
     
     def run_episode(self):
 
@@ -35,10 +34,9 @@ class Simulator():
         n_steps = 0 
 
         current_game = torch.zeros(1, 4, 4)
-        # current_game_stats = torch.zeros(1, 2)
 
         # runs an episode until termination 
-        while not game.is_terminal_state():
+        while not game.is_terminal_state() and n_steps < 1200:
 
             # gets state, and makes action based on state
             state = game.get_state().flatten()
@@ -48,17 +46,13 @@ class Simulator():
             game.move(action)
             n_steps += 1
 
-            # plot and save image of game at that time from board game function
-            # game.visualize_board_save(n_steps)
-
             # Save a tensor in the game sequence
             # newStats = torch.tensor([game.get_score(), game.get_last_move()])
             newState = torch.from_numpy(state).reshape([1, 4, 4])
             current_game = torch.cat((current_game, newState), dim = 0)
-            # print(current_game)
-        # print(current_game)
+
         self.gameplay_tensor = current_game
-        # print(self.gameplay_tensor)
+
         # updates simulation info dictionaries 
         self.num_steps[n_steps] = self.num_steps.get(n_steps, 0) + 1
         self.max_scores[game.get_max()] = self.max_scores.get(game.get_max(), 0) + 1
@@ -96,9 +90,6 @@ class Simulator():
         os.system('ffmpeg -r 3 -i figure%d.png -vcodec mpeg4 -y '+fn)
         print("A video showing the agent's traversal is ready to view. Opening...")
         os.system('open '+fn)
-        # TODO remove the images after creating them
-        # for i in range(self.max_num_steps):
-            # os.remove('figure' + str(i+1) + '.png')
     
     # function for visualizing a single state and saving as a png
     def visualize_board_simulator_single(self, num, stateTensor):
@@ -116,9 +107,7 @@ class Simulator():
                 max_number = max(data, max_number)
                 color = Board.CELL_BACKGROUND_COLOR_DICT[data]
                 table[(i, j)].set_facecolor(color)
-        # ax.text(self.VISUAL_X_COORD, .8, 'Current Score: ' + str(score), transform = ax.transAxes, color = 'black')
         ax.text(self.VISUAL_X_COORD, .7, 'Max Number: ' + str(max_number), transform = ax.transAxes, color = 'black')
-        # ax.text(self.VISUAL_X_COORD, .2, 'Last Move: ' + last_move, transform = ax.transAxes, color = 'black')
         plt.savefig('figure' + str(num) + '.png')
         plt.close()
 
@@ -135,10 +124,24 @@ class Simulator():
         p.plt_game_score(plt_type=plt_type)
         p.save_info()
 
-
 if __name__ == "__main__":
-    S1 = Simulator()
-    S1.run_episodes()
-    # S1.visualize_board_video()
+
+    DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+    SHARED_HIDDEN_LAYER_SIZE= 256
+    NUM_SHARED_LAYERS = 1
+    ACTIVATION = nn.Tanh()
+
+    ppo_agent = AgentPPO(obs_space_size=16*18, 
+                         act_space_size=4, 
+                         hidden_layer_size=SHARED_HIDDEN_LAYER_SIZE,
+                         num_shared_layers=NUM_SHARED_LAYERS,
+                         activation_function=ACTIVATION,
+                         device = DEVICE,
+                         model_path = 'submissions/final-model-2048/ppo-trainedmodel.pt')
+
+    #S1 = Simulator(ppo_agent)  
+    S1 = Simulator() 
+    S1.run_episodes(num_episodes=1000)
     S1.get_simulation_info()
     S1.plt_sim()
+
