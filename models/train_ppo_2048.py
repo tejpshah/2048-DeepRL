@@ -1,5 +1,3 @@
-# Note: This file is a WIP
-
 # deep learning modules 
 import torch
 import torch.nn as nn 
@@ -15,15 +13,23 @@ from train_ppo_base import *
 
 def plot_2048_training(stats_file='ppo_2048_stats.json', w_size=20, dpi=300):
     """
-    Generate a line plot of the average reward over the number of steps taken during training.
+    Generates a line plot of the average reward over the number of steps taken during training.
+
+    Args:
+    - stats_file (str): the path to the JSON file containing the training statistics (default: 'ppo_2048_stats.json')
+    - w_size (int): the size of the rolling window used for smoothing the plot (default: 20)
+    - dpi (int): the resolution of the saved image file (default: 300)
     """
+    # Load the training statistics from the specified file
     with open(stats_file, "r") as f:
         stats = json.load(f)
 
+    # Smooth the data using a rolling average with the specified window size
     window_size = w_size 
     rolling_avg_reward = np.convolve(stats["avg_reward"], np.ones(window_size)/window_size, mode='valid')
     rolling_num_steps = stats["num_steps"][window_size-1:]
 
+    # Generate the plot and save it to a file
     plt.plot(rolling_num_steps, rolling_avg_reward)
     plt.xlabel("NumSteps")
     plt.ylabel("Avg Reward")
@@ -57,14 +63,6 @@ if __name__ == "__main__":
     env = EnvironmentWrapper() 
 
     # set up model
-    '''
-    model = ActorCritic(env.observation_space_len, 
-                        env.action_space_len, 
-                        hidden_layer_size=SHARED_HIDDEN_LAYER_SIZE, 
-                        num_shared_layers=NUM_SHARED_LAYERS, 
-                        activation_function=ACTIVATION)
-    '''
-
     model = ActorCritic(
         obs_size=env.observation_space_len,
         act_size=env.action_space_len,
@@ -92,8 +90,6 @@ if __name__ == "__main__":
     
     # train the model with PPO
     train_ppo(env=env, model=model, ppo_trainer=ppo, ppo_buffer = ppobuffer,n_episodes=N_EPISODES, num_rollouts=NUM_ROLLOUTS, print_freq=PRINT_FREQ, save_freq=SAVE_FREQ, save_model=True, model_path="ppo_2048_model_rewardfinal15", stats_path ="ppo_2048_stats_rewardfinal15.json", load_from_checkpoint=True)
-    
-    ###  PLOTS TRAINING AND EVALUATES TRAINED MODEL FOR PROXIMAL POLICY OPTIMIZATION ###
     
 
 
