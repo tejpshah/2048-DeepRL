@@ -234,7 +234,7 @@ if __name__ == "__main__":
   plt.ion()
   
   # Define save path for model checkpoints
-  SAVE_PATH = os.path.join(os.path.dirname(__file__), 'data', 'Checkpoints', 'Test4_5_active.pt')
+  SAVE_PATH = os.path.join(os.path.dirname(__file__), 'data', 'Checkpoints', 'Test4_5_active_final.pt')
   
   # Define named tuple for storing transition data
   TRANSITION = namedtuple('Transition', ('state', 'action', 'reward', 'next_state'))

@@ -1,9 +1,9 @@
 import os
 import numpy as np
 import torch
-from ddqn_base import DoubleDQN
+from .ddqn_base import DoubleDQN
 
-SAVE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'Checkpoints', 'Test4_5_active.pt')
+SAVE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'submission', 'ddqn', 'successful-model-2048', 'all_parameters', 'Test4_5_active_final.pt')
 
 class AgentDoubleDQN():
     def __init__(self):

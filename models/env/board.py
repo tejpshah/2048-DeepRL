@@ -86,6 +86,7 @@ class Board():
         episode is over is board is full.
         returns 1 if terminal state, 0 otherwise. 
         '''
+        
         if len(self.get_spawn_tile_locations()) > 0:
             return 0
         # Check if any combinations can be made if the board is full
