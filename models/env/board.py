@@ -1,7 +1,10 @@
-import numpy as np 
+import os
 import tkinter as tk
-import pandas as pd
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
 
 class Board():
 
@@ -80,13 +83,10 @@ class Board():
 
     def is_terminal_state(self):
         '''
-        episode is over is board is full or 2048 is achieved. 
+        episode is over is board is full.
         returns 1 if terminal state, 0 otherwise. 
         '''
-        '''
-        if 2048 in self.state:
-            return 1
-        '''
+        
         if len(self.get_spawn_tile_locations()) > 0:
             return 0
         # Check if any combinations can be made if the board is full
@@ -268,7 +268,7 @@ class Board():
 
         # Save the figure to a file with the specified number appended to the filename
         plt.rc('savefig', dpi=300)
-        plt.savefig('figure' + str(num) + '.png')
+        plt.savefig(os.path.dirname(__file__) + 'data/Visual/' + 'figure' + str(num) + '.png')
 
         # Close the figure to free up memory
         plt.close()
