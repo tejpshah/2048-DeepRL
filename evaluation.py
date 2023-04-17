@@ -17,7 +17,7 @@ class Evaluation():
     def __init__(self, agent=None):
 
         # selects which agent to run simulations from
-        self.agent = AgentDoubleDQN() 
+        self.agent = agent
 
         # stores simulation info for plotting
         # self.game_scores = mp.Manager().dict()
