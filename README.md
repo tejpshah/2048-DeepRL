@@ -23,7 +23,7 @@ After training, the DDQN agent could win several games, achieving tiles valued a
 
 Here is a bar graph of the maximum tile achieved by the DDQN agent in 1000 simulations. 
 
-![](https://github.com/tejpshah/2048-DeepRL/blob/main/submission/ddqn/successful-model-2048/Final_training_MaxScore.jpg)
+![](https://github.com/tejpshah/2048-DeepRL/blob/gliuu-patch-1/submission/ddqn/successful-model-2048/hd_ddqn2048_max_scores_bar.png)
 
 ## PPO Agent and Results
 PPO is implemented as an improvement to TRPO. It optimizes a policy for the agent, but it essentially "clips" how far in one direction the policy will change, so that any changes to the policy are more conservative. We use the Actor-Critic Model; we have two networks, with some shared layers, one for the actor (policy) and one for the critic (value). The critic is used to evaluate actions proposed by the actor. 
