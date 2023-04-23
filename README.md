@@ -9,7 +9,7 @@ We built our game emulating the [original 2048](https://play2048.co/). Movements
 
 Prior to testing the agents on 2048, we trained models in the Cart Pole v1 environment; both models trained agents that obtained the optimal reward/score in Cart Pole. Notebooks for these files are also included here.
 
-## Reward &amp State Representation
+## Reward and State Representation
 The DDQN model used the number of empty (0) tiles on the board to calculate its reward. The PPO model used the maximum tile on the board and the change in game score. 
 
 For state representation, both models transformed the 4x4 game board into one hot vectors, corresponding to the value of the tile.  
@@ -19,10 +19,14 @@ DDQN is implemented by having two networks, a target network and an online netwo
 
 After training, the DDQN agent could win several games, achieving tiles valued at 2048. Most freqeuntly, the DDQN agent reached a maximum tile of 1024 before the board fills up. 
 
+![](https://github.com/tejpshah/2048-DeepRL/blob/gliuu-patch-1/gifs/DDQN.gif)
+
 ## PPO Agent and Results
 PPO is implemented as an improvement to TRPO. It optimizes a policy for the agent, but it essentially "clips" how far in one direction the policy will change, so that any changes to the policy are more conservative. We use the Actor-Critic Model; we have two networks, with some shared layers, one for the actor (policy) and one for the critic (value). The critic is used to evaluate actions proposed by the actor. 
 
 After training, the PPO agent could achieve tiles of value 512 in a couple of games, but most frequently, it reached a maximum tile of 256 before the board fills up. 
+
+![](https://github.com/tejpshah/2048-DeepRL/blob/gliuu-patch-1/gifs/PPO.gif)
 
 ## Conclusion and Insights
 Both DDQN and PPO performed better than the random agent, so both models do result in learning. The DDQN performed better than the PPO agent. Both models deserve further study. 
