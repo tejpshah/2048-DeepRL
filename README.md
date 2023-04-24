@@ -19,18 +19,18 @@ DDQN is implemented by having two networks, a target network and an online netwo
 
 After training, the DDQN agent could win several games, achieving tiles valued at 2048. Most freqeuntly, the DDQN agent reached a maximum tile of 1024 before the board fills up. 
 
-![](https://github.com/tejpshah/2048-DeepRL/blob/gliuu-patch-1/gifs/DDQN.gif)
+![](https://github.com/tejpshah/2048-DeepRL/blob/main/gifs/DDQN.gif)
 
 Here is a bar graph of the maximum tile achieved by the DDQN agent in 1000 simulations. 
 
-![](https://github.com/tejpshah/2048-DeepRL/blob/gliuu-patch-1/submission/ddqn/successful-model-2048/hd_ddqn2048_max_scores_bar.png)
+![](https://github.com/tejpshah/2048-DeepRL/blob/main/submission/ddqn/successful-model-2048/hd_ddqn2048_max_scores_bar.png)
 
 ## PPO Agent and Results
 PPO is implemented as an improvement to TRPO. It optimizes a policy for the agent, but it essentially "clips" how far in one direction the policy will change, so that any changes to the policy are more conservative. We use the Actor-Critic Model; we have two networks, with some shared layers, one for the actor (policy) and one for the critic (value). The critic is used to evaluate actions proposed by the actor. 
 
 After training, the PPO agent could achieve tiles of value 512 in a couple of games, but most frequently, it reached a maximum tile of 256 before the board fills up. 
 
-![](https://github.com/tejpshah/2048-DeepRL/blob/gliuu-patch-1/gifs/PPO.gif)
+![](https://github.com/tejpshah/2048-DeepRL/blob/main/gifs/PPO.gif)
 
 Here is a bar graph of the maximum tile achieved by the PPO agent in 1000 simulations. 
 
@@ -39,7 +39,7 @@ Here is a bar graph of the maximum tile achieved by the PPO agent in 1000 simula
 ## Comparison to Random Agent
 When testing our random agent, to serve as comparison for our trained agent, the random one most frequently got tiles of value 64. Here is a bar graph of the maximum tile achieved by the random agent in 1000 simulations. 
 
-![](https://github.com/tejpshah/2048-DeepRL/blob/gliuu-patch-1/submission/random/random2048_max_scores_bar.png)
+![](https://github.com/tejpshah/2048-DeepRL/blob/main/submission/random/random2048_max_scores_bar.png)
 
 ## Conclusion and Insights
 Both DDQN and PPO performed better than the random agent, so both models do result in learning. The DDQN performed better than the PPO agent. Both models deserve further study. 
