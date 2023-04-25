@@ -1,6 +1,10 @@
 # 2048-DeepRL
 CS462 Final Project: Tej, Gloria &amp; Max -- 2048 with Deep RL
 
+## Report & Slides
+Report: https://github.com/tejpshah/2048-DeepRL/blob/main/submission/cs462_2048_deeprl_paper_vf.pdf
+Slides: https://github.com/tejpshah/2048-DeepRL/blob/main/submission/cs462_2048_deeprl_presentation_vf.pdf
+
 ## Introduction and Motivation
 This repository contains code for training DDQN (Double Deep Q Network) and PPO (Proximal Policy Optimization) agents to play the game 2048, as well as code for our 2048 game environment, plotting and visualization functions, and the agents' implementation in Cart Pole. It is our semester long project for the class CS 462, Introduction to Deep Learning, at Rutgers University New Brunswick. Our goal was to learn and try out DDQN and PPO implementations, which are promising algorithms in the field of deep reinforcement learning. We chose to have the agents learn to play the game 2048 because the game movements and objectives are simple to understand, but there are elements of randomness and a vast state space. 
 
